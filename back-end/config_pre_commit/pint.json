@@ -1,0 +1,20 @@
+{
+ "preset": "laravel",
+ "rules": {
+     "no_superfluous_phpdoc_tags": {
+         "remove_inheritdoc": false,
+         "remove_throws": false,
+         "remove_var": false,
+         "remove_param": false,
+         "remove_return": false,
+         "remove_property": false,
+         "remove_method": false,
+         "remove_class": false,
+         "remove_abstract": false,
+         "remove_final": false
+     },
+     "no_empty_phpdoc": false,
+     "no_empty_statement": false,
+     "no_useless_return": false
+ }
+}

@@ -1,0 +1,28 @@
+includes:
+  - ../vendor/larastan/larastan/extension.neon
+  - ../vendor/nesbot/carbon/extension.neon
+
+parameters:
+  level: 7 # max strictness (0-8)
+
+  bootstrapFiles:
+    - phpstan-bootstrap.php
+
+  reportMaybesInPropertyPhpDocTypes: false
+
+ # Paths need check
+  paths:
+    - ../app
+    - ../routes
+ 
+ # Exclude file not check
+  excludePaths:
+    - tests/*
+    - storage/*
+    - bootstrap/*
+    - vendor/*
+
+  ignoreErrors:
+    - '#Undefined variable: \$this#'
+    - '#Variable \$this in PHPDoc tag @var does not exist#'
+  reportUnmatchedIgnoredErrors: false

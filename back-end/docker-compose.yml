@@ -1,0 +1,51 @@
+version: '2.2'
+services:
+  db:
+    container_name: ecommerce-db
+    image: mysql:8.0
+    command: "--default-authentication-plugin=mysql_native_password"
+    ports:
+      - "33062:3306"
+    environment:
+      MYSQL_DATABASE: ecommerce-db
+      MYSQL_USER: ecommerce
+      MYSQL_PASSWORD: ecommerce
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_USER: root
+        
+  webserver:
+    container_name: webserver
+    build:
+      context: .
+      dockerfile: docker_files/nginx/DockerfileNgnix
+    ports:
+      - "8081:80"
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    depends_on:
+      - app
+    volumes:
+      - .:/var/www/html
+
+  app:
+    container_name: app
+    ports:
+      - "9000:80"
+    # extra_hosts:
+    #   - 'host.docker.internal:host-gateway'
+    depends_on:
+      - db
+    build:
+      dockerfile: Dockerfile
+      context: .
+      # args:
+      #     uid: 1000 # User ID get from .env file order export 
+      #     gid: 1000 # Group ID get from .env file order export  
+    volumes:
+      - .:/var/www/html
+
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - "6379:6379"

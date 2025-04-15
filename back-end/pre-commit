@@ -1,0 +1,20 @@
+#!/bin/sh
+
+echo "Run pint............................"
+./vendor/bin/pint --config pint.json
+
+
+# Run PHPStan with Laravel
+echo "Run PHPStan............................"
+vendor/bin/phpstan analyse --configuration=config_pre_commit/phpstan.neon.dist --memory-limit=1G
+
+# Capture the exit code of PHPStan
+RESULT=$?
+
+# If PHPStan fails, prevent the commit
+if [ $RESULT -ne 0 ]; then
+ echo "PHPStan analysis failed. Please fix the errors before committing."
+ exit 1
+fi
+
+exit 0
