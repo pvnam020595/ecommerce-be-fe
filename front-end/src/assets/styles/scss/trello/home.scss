@@ -1,0 +1,153 @@
+@use '../variables';
+.surface {
+	width: variables.$width-100;
+	height: variables.$height-100;
+	background-color: variables.$ds-background-white;
+
+	.header-menu {
+		display: flex;
+		box-sizing: border-box;
+		max-height: 48px;
+		padding: 0.8rem;
+		transition: background-color 300ms;
+		-webkit-backdrop-filter: blur(6px);
+		backdrop-filter: blur(6px);
+		background-color: variables.$ds-background-white;
+		flex-direction: row;
+		justify-content: space-between;
+		border-bottom: 0.1rem solid variables.$ds-border-accent-gray;
+		.header-left-menu {
+			display: flex;
+			flex-grow: 1;
+			justify-content: flex-start;
+			height: 3.2rem;
+			.logo {
+				display: flex;
+				align-items: center;
+				gap: 0.5rem;
+				span {
+					font-size: 1.6rem;
+					font-weight: 700;
+					color: variables.$ds-text-subtle;
+				}
+			}
+		}
+		.header-center-menu {
+			display: flex;
+			align-items: center;
+			flex-grow: 2;
+			gap: 1rem;
+			height: 3.2rem;
+			.search-box {
+				flex-grow: 2;
+				input.t-custom-input {
+					height: 3.2rem;
+					font-size: 1.4rem;
+				}
+			}
+			.create-board {
+				.create-board-button {
+					height: 3.2rem;
+					font-size: 1.4rem;
+					font-weight: 600;
+				}
+			}
+		}
+		.header-right-menu {
+			display: flex;
+			justify-content: flex-end;
+			align-items: center;
+			flex-grow: 1;
+			gap: 2rem;
+			height: 3.2rem;
+			.dropdown-toggle {
+				height: 3.2rem;
+				width: 3.2rem;
+				svg {
+					font-size: 1.8rem;
+					color: variables.$ds-text-subtle;
+					height: 100%;
+					width: 100%;
+				}
+				&.show {
+					border: none !important;
+				}
+				&:after {
+					display: none;
+				}
+				&:hover {
+					background-color: variables.$ds-background-accent-gray-subtle-hovered;
+				}
+				&:active {
+					border: none !important;
+				}
+			}
+			.notification {
+				.list-notification {
+					min-width: 30rem;
+					max-height: 400rem;
+					overflow-y: auto;
+					.item {
+						font-size: 1.4rem;
+					}
+				}
+			}
+			.account {
+				.list-account {
+					min-width: 30rem;
+					max-height: 400rem;
+					overflow-y: auto;
+					.item {
+						font-size: 1.4rem;
+						display: flex;
+						.avatar {
+							max-width: 8rem;
+							max-height: 8rem;
+							img {
+								width: 100%;
+								height: 100%;
+								border-radius: 50%;
+							}
+						}
+						.info-account {
+							display: flex;
+							flex-direction: column;
+							justify-content: center;
+						}
+					}
+				}
+			}
+		}
+	}
+	// Left menu
+	.left-menu {
+		width: 20rem;
+		height: calc(100vh - 4.8rem);
+		background-color: variables.$ds-background-white;
+		border-right: 0.1rem solid variables.$ds-border-accent-gray;
+		font-size: 1.6rem;
+		.home-left-sidebar {
+			height: 100%;
+			overflow-y: auto;
+			overflow-x: hidden;
+			ul.nav {
+				li.nav-item {
+					a.nav-link {
+						padding: 1.2rem 1.6rem;
+						color: variables.$ds-text-subtle;
+						&:hover {
+							background-color: variables.$ds-background-accent-gray-subtle-hovered;
+						}
+						&.active {
+							background-color: variables.$ds-background-accent-blue-subtle;
+							border-right: 0.4rem solid
+								variables.$ds-border-accent-blue;
+							color: variables.$ds-text-accent-blue;
+							font-weight: 600;
+						}
+					}
+				}
+			}
+		}
+	}
+}

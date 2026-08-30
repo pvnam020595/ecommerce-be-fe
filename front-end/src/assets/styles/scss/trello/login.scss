@@ -1,0 +1,172 @@
+@use '../variables';
+
+body,
+html {
+	margin: 0;
+	padding: 0;
+	font-size: 10px;
+}
+
+.page-login {
+	width: variables.$width-100;
+	height: variables.$height-100;
+
+	img {
+		height: 24px;
+		width: 24px;
+	}
+
+	.white-box-container {
+		min-height: calc(100% - 100px);
+		display: flex;
+		flex-direction: column;
+		-webkit-box-pack: center;
+		justify-content: center;
+		margin: 50px 0px;
+
+		.box-login {
+			display: flex;
+			flex-direction: column;
+			margin: 0px auto;
+			width: 400px;
+			padding: 32px 40px;
+			background: rgb(255, 255, 255);
+			border-radius: 3px;
+			box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 10px;
+			box-sizing: border-box;
+			color: variables.$ds-text-subtle;
+
+			.header {
+				display: flex;
+				justify-content: center;
+				text-align: center;
+
+				.title-login {
+					font-size: 2.4rem;
+					font-weight: 900;
+					color: variables.$ds-text-subtle;
+				}
+			}
+
+			.different-method-login {
+				display: flex;
+				flex-direction: column;
+				text-align: center;
+				margin: 1rem 0;
+
+				span {
+					font-size: 1.4rem;
+					color: variables.$ds-text-subtle;
+					font-weight: 600;
+				}
+			}
+
+			.section-login {
+				.form-login {
+					display: flex;
+					flex-direction: column;
+					gap: 0.5rem;
+
+					& label {
+						font-size: 1.4rem;
+						font-weight: 600;
+						color: variables.$ds-text-subtle;
+					}
+					& .field-required {
+						font-size: 1.4rem;
+						font-weight: 600;
+						color: variables.$ds-text-danger;
+					}
+					.form-check {
+						.form-check-input-custom {
+							width: 1.4rem;
+							height: 1.4rem;
+							margin-right: 1.2rem;
+						}
+					}
+					.login-button {
+						margin-top: 16px;
+						width: 100%;
+						height: 40px;
+						background-color: variables.$ds-background-accent-blue-bolder;
+						border: none;
+						border-radius: 3px;
+						color: variables.$ds-text-inverse;
+						font-size: 14px;
+						font-weight: bold;
+						cursor: pointer;
+						transition: background-color 0.2s;
+
+						&:hover {
+							background-color: variables.$ds-background-accent-blue-bolder-hovered;
+						}
+					}
+				}
+			}
+
+			.other-method-login {
+				.auth-method-list {
+					padding: 0 0 0 0 !important;
+
+					.auth-item {
+						list-style: none;
+						margin-bottom: 16px;
+						padding: 0 0 0 0 !important;
+
+						.social-auth-buttons {
+							-webkit-box-align: baseline;
+							align-items: baseline;
+							box-sizing: border-box;
+							display: inline-flex;
+							font-size: inherit;
+							font-style: normal;
+							font-family: inherit;
+							max-width: 100%;
+							position: relative;
+							text-align: center;
+							text-decoration: none;
+							transition:
+								background 0.1s ease-out,
+								box-shadow 0.15s
+									cubic-bezier(0.47, 0.03, 0.49, 1.38);
+							white-space: nowrap;
+							cursor: pointer;
+							padding: 0px 10px;
+							vertical-align: middle;
+							width: 100%;
+							-webkit-box-pack: center;
+							justify-content: center;
+							box-shadow: none;
+							font-weight: bold;
+							border: 1px solid rgb(193, 199, 208);
+							border-radius: 3px;
+							color: var(--ds-text, #42526e) !important;
+							height: 40px !important;
+							line-height: 40px !important;
+							background: rgb(255, 255, 255) !important;
+
+							&:hover {
+								background: variables.$ds-background-neutral-subtle-hovered !important;
+							}
+							span {
+								opacity: 1;
+								transition: opacity 0.3s;
+								margin: 0px 2px;
+								-webkit-box-flex: 1;
+								flex-grow: 0;
+								flex-shrink: 0;
+								overflow: hidden;
+								text-overflow: ellipsis;
+								white-space: nowrap;
+								&.method-name {
+									font-size: 1.4rem;
+									color: variables.$ds-text-subtle;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

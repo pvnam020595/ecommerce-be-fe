@@ -1,0 +1,19 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
+  "compilerOptions": {
+    // 👇 Add these two lines
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@modules/*": ["src/modules/*"],
+      "@css/*": ["public/css/*"]
+    },
+    // "noEmit": true,
+    // "composite": true,
+  },
+  "include": ["src", "public"]
+}

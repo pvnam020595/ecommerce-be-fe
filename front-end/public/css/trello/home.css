@@ -1,0 +1,139 @@
+.surface {
+  width: 100%;
+  height: 100%;
+  background-color: #ffffff;
+}
+.surface .header-menu {
+  display: flex;
+  box-sizing: border-box;
+  max-height: 48px;
+  padding: 0.8rem;
+  transition: background-color 300ms;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  background-color: #ffffff;
+  flex-direction: row;
+  justify-content: space-between;
+  border-bottom: 0.1rem solid #758195;
+}
+.surface .header-menu .header-left-menu {
+  display: flex;
+  flex-grow: 1;
+  justify-content: flex-start;
+  height: 3.2rem;
+}
+.surface .header-menu .header-left-menu .logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.surface .header-menu .header-left-menu .logo span {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #44546f;
+}
+.surface .header-menu .header-center-menu {
+  display: flex;
+  align-items: center;
+  flex-grow: 2;
+  gap: 1rem;
+  height: 3.2rem;
+}
+.surface .header-menu .header-center-menu .search-box {
+  flex-grow: 2;
+}
+.surface .header-menu .header-center-menu .search-box input.t-custom-input {
+  height: 3.2rem;
+  font-size: 1.4rem;
+}
+.surface .header-menu .header-center-menu .create-board .create-board-button {
+  height: 3.2rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+.surface .header-menu .header-right-menu {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-grow: 1;
+  gap: 2rem;
+  height: 3.2rem;
+}
+.surface .header-menu .header-right-menu .dropdown-toggle {
+  height: 3.2rem;
+  width: 3.2rem;
+}
+.surface .header-menu .header-right-menu .dropdown-toggle svg {
+  font-size: 1.8rem;
+  color: #44546f;
+  height: 100%;
+  width: 100%;
+}
+.surface .header-menu .header-right-menu .dropdown-toggle.show {
+  border: none !important;
+}
+.surface .header-menu .header-right-menu .dropdown-toggle:after {
+  display: none;
+}
+.surface .header-menu .header-right-menu .dropdown-toggle:hover {
+  background-color: #b3b9c4;
+}
+.surface .header-menu .header-right-menu .dropdown-toggle:active {
+  border: none !important;
+}
+.surface .header-menu .header-right-menu .notification .list-notification {
+  min-width: 30rem;
+  max-height: 400rem;
+  overflow-y: auto;
+}
+.surface .header-menu .header-right-menu .notification .list-notification .item {
+  font-size: 1.4rem;
+}
+.surface .header-menu .header-right-menu .account .list-account {
+  min-width: 30rem;
+  max-height: 400rem;
+  overflow-y: auto;
+}
+.surface .header-menu .header-right-menu .account .list-account .item {
+  font-size: 1.4rem;
+  display: flex;
+}
+.surface .header-menu .header-right-menu .account .list-account .item .avatar {
+  max-width: 8rem;
+  max-height: 8rem;
+}
+.surface .header-menu .header-right-menu .account .list-account .item .avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+.surface .header-menu .header-right-menu .account .list-account .item .info-account {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.surface .left-menu {
+  width: 20rem;
+  height: calc(100vh - 4.8rem);
+  background-color: #ffffff;
+  border-right: 0.1rem solid #758195;
+  font-size: 1.6rem;
+}
+.surface .left-menu .home-left-sidebar {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.surface .left-menu .home-left-sidebar ul.nav li.nav-item a.nav-link {
+  padding: 1.2rem 1.6rem;
+  color: #44546f;
+}
+.surface .left-menu .home-left-sidebar ul.nav li.nav-item a.nav-link:hover {
+  background-color: #b3b9c4;
+}
+.surface .left-menu .home-left-sidebar ul.nav li.nav-item a.nav-link.active {
+  background-color: #579dff;
+  border-right: 0.4rem solid #1d7afc;
+  color: #0055cc;
+  font-weight: 600;
+}

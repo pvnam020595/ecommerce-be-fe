@@ -1,0 +1,11 @@
+@use '../variables';
+
+html {
+	height: variables.$height-100;
+	width: variables.$width-100;
+	boby {
+		height: variables.$height-100;
+		width: variables.$width-100;
+		background-color: red;
+	}
+}
