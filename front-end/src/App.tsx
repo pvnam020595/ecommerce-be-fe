@@ -16,11 +16,12 @@ library.add(fas, fab, faCheckSquare, faCoffee);
 const routes = {
 	trello: '/trello',
 	ecommerce: '/ecommerce'
-} as const;
+};
 
 function App() {
 	const navigate = useNavigate();
 
+	// Function to handle redirecting to the selected platform route
 	const handlePlatformChange = (
 		event: React.ChangeEvent<HTMLSelectElement>
 	): void => {
@@ -51,7 +52,7 @@ function App() {
 					<option value="ecommerce">Ecommerce</option>
 				</select>
 			)}
-
+			{/* Content page child */}
 			<Outlet />
 		</div>
 	);

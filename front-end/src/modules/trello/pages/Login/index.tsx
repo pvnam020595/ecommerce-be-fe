@@ -2,14 +2,19 @@ import '@css/trello/login.css';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@modules/trello/components/Button.tsx';
+import { useDispatch } from 'react-redux';
 export const Login = () => {
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 	const navigate = useNavigate();
-	const handleLogin = () => {
+	const dispatch = useDispatch();
+	const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+		debugger
+		e.preventDefault();
 		if (!email || !password) {
 			console.log('Please enter both email and password.');
 		} else {
+			dispatch({ type: 'LOGIN', payload: { email, password } });
 			// Perform login logic here
 			navigate('/trello/home', { replace: true }); // Redirect to the home page after successful login
 		}

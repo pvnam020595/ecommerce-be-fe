@@ -1,4 +1,4 @@
-import rootReducer from './rootReducers';
+import rootReducer from '@/redux/rootReducers';
 import { legacy_createStore as createStore} from 'redux'
 
 export const store = createStore(rootReducer);
