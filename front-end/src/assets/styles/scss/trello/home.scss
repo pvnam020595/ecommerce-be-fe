@@ -1,153 +1,413 @@
-@use '../variables';
-.surface {
-	width: variables.$width-100;
-	height: variables.$height-100;
-	background-color: variables.$ds-background-white;
+// @use '../variables';
+// .surface {
+// 	width: variables.$width-100;
+// 	height: variables.$height-100;
+// 	background-color: variables.$ds-background-white;
 
-	.header-menu {
-		display: flex;
-		box-sizing: border-box;
-		max-height: 48px;
-		padding: 0.8rem;
-		transition: background-color 300ms;
-		-webkit-backdrop-filter: blur(6px);
-		backdrop-filter: blur(6px);
-		background-color: variables.$ds-background-white;
-		flex-direction: row;
-		justify-content: space-between;
-		border-bottom: 0.1rem solid variables.$ds-border-accent-gray;
-		.header-left-menu {
-			display: flex;
-			flex-grow: 1;
-			justify-content: flex-start;
-			height: 3.2rem;
-			.logo {
-				display: flex;
-				align-items: center;
-				gap: 0.5rem;
-				span {
-					font-size: 1.6rem;
-					font-weight: 700;
-					color: variables.$ds-text-subtle;
-				}
-			}
-		}
-		.header-center-menu {
-			display: flex;
-			align-items: center;
-			flex-grow: 2;
-			gap: 1rem;
-			height: 3.2rem;
-			.search-box {
-				flex-grow: 2;
-				input.t-custom-input {
-					height: 3.2rem;
-					font-size: 1.4rem;
-				}
-			}
-			.create-board {
-				.create-board-button {
-					height: 3.2rem;
-					font-size: 1.4rem;
-					font-weight: 600;
-				}
-			}
-		}
-		.header-right-menu {
-			display: flex;
-			justify-content: flex-end;
-			align-items: center;
-			flex-grow: 1;
-			gap: 2rem;
-			height: 3.2rem;
-			.dropdown-toggle {
-				height: 3.2rem;
-				width: 3.2rem;
-				svg {
-					font-size: 1.8rem;
-					color: variables.$ds-text-subtle;
-					height: 100%;
-					width: 100%;
-				}
-				&.show {
-					border: none !important;
-				}
-				&:after {
-					display: none;
-				}
-				&:hover {
-					background-color: variables.$ds-background-accent-gray-subtle-hovered;
-				}
-				&:active {
-					border: none !important;
-				}
-			}
-			.notification {
-				.list-notification {
-					min-width: 30rem;
-					max-height: 400rem;
-					overflow-y: auto;
-					.item {
-						font-size: 1.4rem;
-					}
-				}
-			}
-			.account {
-				.list-account {
-					min-width: 30rem;
-					max-height: 400rem;
-					overflow-y: auto;
-					.item {
-						font-size: 1.4rem;
-						display: flex;
-						.avatar {
-							max-width: 8rem;
-							max-height: 8rem;
-							img {
-								width: 100%;
-								height: 100%;
-								border-radius: 50%;
-							}
-						}
-						.info-account {
-							display: flex;
-							flex-direction: column;
-							justify-content: center;
-						}
-					}
-				}
-			}
-		}
-	}
-	// Left menu
-	.left-menu {
-		width: 20rem;
-		height: calc(100vh - 4.8rem);
-		background-color: variables.$ds-background-white;
-		border-right: 0.1rem solid variables.$ds-border-accent-gray;
-		font-size: 1.6rem;
-		.home-left-sidebar {
-			height: 100%;
-			overflow-y: auto;
-			overflow-x: hidden;
-			ul.nav {
-				li.nav-item {
-					a.nav-link {
-						padding: 1.2rem 1.6rem;
-						color: variables.$ds-text-subtle;
-						&:hover {
-							background-color: variables.$ds-background-accent-gray-subtle-hovered;
-						}
-						&.active {
-							background-color: variables.$ds-background-accent-blue-subtle;
-							border-right: 0.4rem solid
-								variables.$ds-border-accent-blue;
-							color: variables.$ds-text-accent-blue;
-							font-weight: 600;
-						}
-					}
-				}
-			}
-		}
-	}
+// 	.header-menu {
+// 		display: flex;
+// 		box-sizing: border-box;
+// 		max-height: 48px;
+// 		padding: 0.8rem;
+// 		transition: background-color 300ms;
+// 		-webkit-backdrop-filter: blur(6px);
+// 		backdrop-filter: blur(6px);
+// 		background-color: variables.$ds-background-white;
+// 		flex-direction: row;
+// 		justify-content: space-between;
+// 		border-bottom: 0.1rem solid variables.$ds-border-accent-gray;
+// 		.header-left-menu {
+// 			display: flex;
+// 			flex-grow: 1;
+// 			justify-content: flex-start;
+// 			height: 3.2rem;
+// 			.logo {
+// 				display: flex;
+// 				align-items: center;
+// 				gap: 0.5rem;
+// 				span {
+// 					font-size: 1.6rem;
+// 					font-weight: 700;
+// 					color: variables.$ds-text-subtle;
+// 				}
+// 			}
+// 		}
+// 		.header-center-menu {
+// 			display: flex;
+// 			align-items: center;
+// 			flex-grow: 2;
+// 			gap: 1rem;
+// 			height: 3.2rem;
+// 			.search-box {
+// 				flex-grow: 2;
+// 				input.t-custom-input {
+// 					height: 3.2rem;
+// 					font-size: 1.4rem;
+// 				}
+// 			}
+// 			.create-board {
+// 				.create-board-button {
+// 					height: 3.2rem;
+// 					font-size: 1.4rem;
+// 					font-weight: 600;
+// 				}
+// 			}
+// 		}
+// 		.header-right-menu {
+// 			display: flex;
+// 			justify-content: flex-end;
+// 			align-items: center;
+// 			flex-grow: 1;
+// 			gap: 2rem;
+// 			height: 3.2rem;
+// 			.dropdown-toggle {
+// 				height: 3.2rem;
+// 				width: 3.2rem;
+// 				svg {
+// 					font-size: 1.8rem;
+// 					color: variables.$ds-text-subtle;
+// 					height: 100%;
+// 					width: 100%;
+// 				}
+// 				&.show {
+// 					border: none !important;
+// 				}
+// 				&:after {
+// 					display: none;
+// 				}
+// 				&:hover {
+// 					background-color: variables.$ds-background-accent-gray-subtle-hovered;
+// 				}
+// 				&:active {
+// 					border: none !important;
+// 				}
+// 			}
+// 			.notification {
+// 				.list-notification {
+// 					min-width: 30rem;
+// 					max-height: 400rem;
+// 					overflow-y: auto;
+// 					.item {
+// 						font-size: 1.4rem;
+// 					}
+// 				}
+// 			}
+// 			.account {
+// 				.list-account {
+// 					min-width: 30rem;
+// 					max-height: 400rem;
+// 					overflow-y: auto;
+// 					.item {
+// 						font-size: 1.4rem;
+// 						display: flex;
+// 						.avatar {
+// 							max-width: 8rem;
+// 							max-height: 8rem;
+// 							img {
+// 								width: 100%;
+// 								height: 100%;
+// 								border-radius: 50%;
+// 							}
+// 						}
+// 						.info-account {
+// 							display: flex;
+// 							flex-direction: column;
+// 							justify-content: center;
+// 						}
+// 					}
+// 				}
+// 			}
+// 		}
+// 	}
+// 	// Left menu
+// 	.left-menu {
+// 		width: 20rem;
+// 		height: calc(100vh - 4.8rem);
+// 		background-color: variables.$ds-background-white;
+// 		border-right: 0.1rem solid variables.$ds-border-accent-gray;
+// 		font-size: 1.6rem;
+// 		.home-left-sidebar {
+// 			height: 100%;
+// 			overflow-y: auto;
+// 			overflow-x: hidden;
+// 			ul.nav {
+// 				li.nav-item {
+// 					a.nav-link {
+// 						padding: 1.2rem 1.6rem;
+// 						color: variables.$ds-text-subtle;
+// 						&:hover {
+// 							background-color: variables.$ds-background-accent-gray-subtle-hovered;
+// 						}
+// 						&.active {
+// 							background-color: variables.$ds-background-accent-blue-subtle;
+// 							border-right: 0.4rem solid
+// 								variables.$ds-border-accent-blue;
+// 							color: variables.$ds-text-accent-blue;
+// 							font-weight: 600;
+// 						}
+// 					}
+// 				}
+// 			}
+// 		}
+// 	}
+// }
+// 1. Import using @use
+@use '../variables';
+
+// Core Dimensions
+$trello-navbar-height: 4.8rem; 
+$trello-sidebar-width: 26rem;
+$board-width: 19rem;
+$board-height: 9.6rem;
+
+html, body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+  font-size: 10px;
+}
+
+// Globals
+.trello-app {
+  background-color: variables.$ds-surface;
+  color: variables.$ds-text;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+}
+
+.fs-7 { font-size: 1.5rem; }
+.fs-8 { font-size: 1.4rem; }
+.cursor-pointer { cursor: pointer; }
+
+// --- NAVBAR ---
+.trello-navbar {
+  height: $trello-navbar-height;
+  background-color: variables.$ds-surface;
+  border-bottom: 0.1rem solid variables.$ds-border;
+  padding: 0 1.6rem;
+  
+  .trello-logo-icon {
+    color: #0c66e4;
+    font-size: 3rem;
+
+  }
+  .logo-text { font-family: "Charlie Display", sans-serif; letter-spacing: -0.05rem; font-size: 2.4rem; font-weight: 700; color: variables.$ds-text-subtle; }
+
+  .nav-link {
+    font-size: 1.5rem;
+    padding: 0.6rem 1.2rem;
+    &:hover { background-color: variables.$ds-background-neutral-hovered; }
+  }
+
+  .create-btn {
+    background-color: variables.$ds-background-brand-bold;
+    border: none;
+    font-size: 1.5rem;
+    &:hover { background-color: variables.$ds-background-brand-bold-hovered; }
+  }
+
+  .search-bar {
+    width: 40rem;
+    border: 0.1rem solid variables.$ds-border;
+    background-color: variables.$ds-surface;
+    transition: width 0.2s ease;
+    height: 3.2rem;
+
+    input {
+      font-size: 1.5rem;
+      &:focus { box-shadow: none; }
+    }
+    &:focus-within {
+      width: 70rem;
+      border-color: variables.$ds-border-focused;
+      box-shadow: 0 0 0 0.2rem variables.$ds-background-selected;
+    }
+	.bi-search { font-size: 1.8rem; }
+  }
+
+  .btn-icon {
+    width: 3.2rem;
+    height: 3.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: variables.$ds-icon;
+	font-size: 1.8rem;
+    &:hover { background-color: variables.$ds-background-neutral-hovered; }
+  }
+
+  .avatar-circle {
+    width: 2.8rem;
+    height: 2.8rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s;
+    
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+
+  // New Dropdown Styles
+  .trello-profile-dropdown {
+    width: 32rem; // 320px width for the dropdown
+    padding: 1.2rem 0;
+    border-radius: 0.4rem;
+    border: 0.1rem solid variables.$ds-border;
+    background-color: variables.$ds-surface;
+    
+    .avatar-circle-lg {
+      width: 4rem;
+      height: 4rem;
+      flex-shrink: 0;
+    }
+    
+    .dropdown-header {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: variables.$ds-text-subtle;
+      text-transform: uppercase;
+      letter-spacing: 0.05rem;
+      padding: 0.8rem 1.6rem;
+      margin-top: 0.4rem;
+    }
+    
+    .dropdown-item {
+      font-size: 1.4rem;
+      padding: 0.8rem 1.6rem;
+      color: variables.$ds-text;
+      
+      &:hover {
+        background-color: variables.$ds-background-neutral-hovered;
+      }
+      
+      &:active {
+        background-color: variables.$ds-background-neutral-pressed;
+        color: variables.$ds-text;
+      }
+    }
+    
+    .dropdown-divider {
+      margin: 0.8rem 0;
+      border-color: variables.$ds-border;
+    }
+
+    .user-info {
+      line-height: 1.4;
+    }
+  }
+}
+
+// --- SIDEBAR ---
+.trello-sidebar {
+  width: $trello-sidebar-width;
+  min-width: $trello-sidebar-width;
+  border-right: 0.1rem solid variables.$ds-border;
+  background-color: variables.$ds-surface;
+
+  .nav-link {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: variables.$ds-text;
+    
+    &:hover { background-color: variables.$ds-background-neutral-hovered; }
+    
+    &.active {
+      background-color: variables.$ds-background-selected;
+      color: variables.$ds-text-selected !important;
+      
+      i { color: variables.$ds-icon-selected; }
+    }
+  }
+}
+
+// --- MAIN CONTENT & BOARDS ---
+.trello-main-content {
+  background-color: variables.$ds-surface;
+  
+  .boards-page-container {
+    max-width: 82.5rem; 
+    margin: 0 auto;
+    padding: 0 1.6rem;
+    
+    @media (min-width: 120rem) {
+      margin: 0 4rem; 
+    }
+  }
+
+  .workspace-logo-xl {
+    width: 6rem;
+    height: 6rem;
+    background: linear-gradient(135deg, #FF7A59, #FF8F73);
+  }
+
+  .section-icon-box {
+    width: 3.2rem;
+    height: 3.2rem;
+  }
+
+  // Board Tiles Grid
+  .board-grid {
+    .board-col {
+      width: $board-width;
+      max-width: $board-width;
+      flex: 0 0 auto;
+    }
+  }
+
+  .board-tile {
+    height: $board-height;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    overflow: hidden;
+
+    .board-overlay {
+      background-color: rgba(0, 0, 0, 0.15); 
+      transition: background-color 0.2s ease;
+    }
+
+    &:hover .board-overlay {
+      background-color: rgba(0, 0, 0, 0.3); 
+    }
+
+    .board-title {
+      text-shadow: 0 0 0.4rem rgba(0,0,0,0.4); 
+      font-size: 1rem;
+      line-height: 1.2;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    // Star interaction
+    .star-icon {
+      position: absolute;
+      bottom: 0.8rem;
+      right: 0.8rem;
+      opacity: 0;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+      
+      // Show on hover
+      .board-tile:hover & {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      &:hover { transform: scale(1.2); }
+      
+      // Always show if starred
+      &.bi-star-fill { opacity: 1; }
+    }
+
+    // Create Board specific tile
+    &.create-board {
+      background-color: variables.$ds-background-neutral;
+      transition: background-color 0.2s ease;
+      
+      &:hover {
+        background-color: variables.$ds-background-neutral-hovered;
+      }
+    }
+  }
 }
