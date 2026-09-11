@@ -1,10 +1,11 @@
 import { combineReducers } from 'redux';
 import { authReducer } from '@/redux/common/authReducer';
-// import { trelloReducer } from './trello/reducers/trelloReducer';
+import { boardReducer } from '@/modules/trello/redux/reducers/boardReducer';
 // import { ecommerceReducer } from './ecommerce/reducers/ecommerceReducer';
+
 const rootReducer = combineReducers({
-	auth: authReducer
-	//   trello: trelloReducer,
+	auth: authReducer,
+	board: boardReducer
 	//   ecommerce: ecommerceReducer,
 });
 export default rootReducer;

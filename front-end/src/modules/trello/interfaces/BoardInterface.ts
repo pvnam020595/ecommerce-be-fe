@@ -3,14 +3,14 @@ export interface Card {
 	title: string;
 }
 
-export interface List {
+export interface Column {
 	id: string;
 	title: string;
 	cards: Card[];
 }
 
-export interface BoardInterface {
+export interface Board {
 	id: string;
 	title: string;
-	// lists: List[];
+	columns: Column[];
 }

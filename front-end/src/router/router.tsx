@@ -1,10 +1,10 @@
 import App from '@/App';
 import { createBrowserRouter } from 'react-router';
 // Modules in project
-import Trello from '@modules/trello/index.tsx';
-import Ecommerce from '@modules/ecommerce/index.tsx';
+import Trello from '@modules/trello';
+import Ecommerce from '@modules/ecommerce';
 import { Boards } from '@/modules/trello/pages/Boards';
-import Home from '@/layouts/clients/Home';
+import { Home } from '@modules/trello/pages/Home';
 
 const router = createBrowserRouter([
 	{

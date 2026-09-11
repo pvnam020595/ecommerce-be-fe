@@ -1,11 +1,6 @@
 import '@css/trello/home.css';
-
-// import './TrelloLayout.scss'; // Import file SCSS
-// Nhớ cài đặt và import Bootstrap Icons vào file gốc (vd: index.js): 
 import 'bootstrap-icons/font/bootstrap-icons.css';
-
 import React, { useState } from 'react';
-// import './TrelloLayout.scss';
 
 const Navbar = () => (
   <nav className="navbar navbar-expand-md trello-navbar px-3 border-bottom">
@@ -156,14 +151,14 @@ const Sidebar = () => (
   </aside>
 );
 
-const BoardCard = ({ title, bgType, bgValue }) => {
+const BoardCard = ({ title, bgType, bgValue, linkTo = "#!" }: any) => {
   const [isStarred, setIsStarred] = useState(false);
 
   const style = bgType === 'image' 
     ? { backgroundImage: `url('${bgValue}')` }
     : { backgroundColor: bgValue };
 
-  const toggleStar = (e) => {
+  const toggleStar = (e: any) => {
     e.preventDefault();
     setIsStarred(!isStarred);
   };

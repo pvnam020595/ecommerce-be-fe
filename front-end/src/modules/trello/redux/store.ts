@@ -6,3 +6,4 @@ const rootReducer = combineReducers({
 });
 
 export const store = createStore(rootReducer);
+export type TrelloRootState = ReturnType<typeof store.getState>;
