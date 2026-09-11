@@ -101,6 +101,13 @@
 .card-item:active {
   cursor: grabbing;
 }
+.card-item .group-hover-opacity-100 {
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+}
+.card-item:hover .group-hover-opacity-100 {
+  opacity: 1;
+}
 
 .rotate-drag {
   transform: rotate(4deg);

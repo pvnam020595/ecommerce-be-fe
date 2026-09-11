@@ -8,8 +8,9 @@ import { CardItem } from './CardItem';
 interface ColumnContainerProps {
 	column: Column;
 	onAddCard: (columnId: string, title: string) => void;
-	onEditCard: (columnId: string, cardId: string, title: string) => void;
+	onEditCard: (columnId: string, cardId: string, updates: Partial<Card>) => void;
 	onDeleteCard: (columnId: string, cardId: string) => void;
+	onEditColumn: (columnId: string, title: string) => void;
 	onDeleteColumn: (columnId: string) => void;
 }
 
@@ -18,11 +19,14 @@ export const ColumnContainer = ({
 	onAddCard, 
 	onEditCard, 
 	onDeleteCard, 
+	onEditColumn,
 	onDeleteColumn 
 }: ColumnContainerProps) => {
 	const [isAdding, setIsAdding] = useState(false);
 	const [newCardTitle, setNewCardTitle] = useState('');
 	const [showMenu, setShowMenu] = useState(false);
+	const [isEditingTitle, setIsEditingTitle] = useState(false);
+	const [editTitle, setEditTitle] = useState(column.title);
 
 	const {
 		attributes,
@@ -36,7 +40,8 @@ export const ColumnContainer = ({
 		data: {
 			type: 'column',
 			column
-		}
+		},
+		disabled: isEditingTitle
 	});
 
 	const { setNodeRef: setDroppableNodeRef } = useDroppable({
@@ -71,6 +76,15 @@ export const ColumnContainer = ({
 		}
 	};
 
+	const handleTitleSave = () => {
+		if (editTitle.trim() && editTitle !== column.title) {
+			onEditColumn(column.id, editTitle.trim());
+		} else {
+			setEditTitle(column.title);
+		}
+		setIsEditingTitle(false);
+	};
+
 	return (
 		<div
 			ref={setSortableNodeRef}
@@ -79,15 +93,34 @@ export const ColumnContainer = ({
 		>
 			{/* Column Header */}
 			<div className="column-header d-flex align-items-center justify-content-between px-2 pt-2 pb-1">
-				<h6 
-					className="fw-bold m-0 fs-7 text-truncate flex-grow-1 column-drag-handle"
-					{...attributes}
-					{...listeners}
-					style={{ cursor: 'grab' }}
-				>
-					{column.title}
-				</h6>
-				<div className="dropdown">
+				{isEditingTitle ? (
+					<input
+						type="text"
+						className="form-control form-control-sm flex-grow-1"
+						value={editTitle}
+						onChange={e => setEditTitle(e.target.value)}
+						onBlur={handleTitleSave}
+						onKeyDown={e => {
+							if (e.key === 'Enter') handleTitleSave();
+							if (e.key === 'Escape') {
+								setEditTitle(column.title);
+								setIsEditingTitle(false);
+							}
+						}}
+						autoFocus
+					/>
+				) : (
+					<h6 
+						className="fw-bold m-0 fs-7 text-truncate flex-grow-1 column-drag-handle"
+						{...attributes}
+						{...listeners}
+						style={{ cursor: 'pointer' }}
+						onClick={() => setIsEditingTitle(true)}
+					>
+						{column.title}
+					</h6>
+				)}
+				<div className="dropdown ms-2">
 					<button
 						className="btn btn-sm p-0 border-0 text-muted"
 						onClick={() => setShowMenu(!showMenu)}
@@ -122,7 +155,7 @@ export const ColumnContainer = ({
 						<CardItem 
 							key={card.id} 
 							card={card} 
-							onEdit={(cardId, newTitle) => onEditCard(column.id, cardId, newTitle)}
+							onEdit={(cardId, updates) => onEditCard(column.id, cardId, updates)}
 							onDelete={(cardId) => onDeleteCard(column.id, cardId)}
 						/>
 					))}

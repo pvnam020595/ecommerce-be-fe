@@ -127,6 +127,15 @@
 	&:active {
 		cursor: grabbing;
 	}
+
+	.group-hover-opacity-100 {
+		opacity: 0;
+		transition: opacity 0.15s ease-in-out;
+	}
+
+	&:hover .group-hover-opacity-100 {
+		opacity: 1;
+	}
 }
 
 // Drag overlay card (the floating clone)

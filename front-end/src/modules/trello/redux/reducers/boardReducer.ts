@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { ADD_COLUMN, ADD_CARD, MOVE_CARD, MOVE_COLUMN, SET_BOARD, BoardActionTypes, DELETE_COLUMN, EDIT_CARD, DELETE_CARD  } from '../types/board';
+import { ADD_COLUMN, DELETE_COLUMN, EDIT_COLUMN, ADD_CARD, EDIT_CARD, DELETE_CARD, MOVE_CARD, MOVE_COLUMN, SET_BOARD, BoardActionTypes } from '../types/board';
 import { Board } from '../../interfaces/BoardInterface';
 
 const initialState: Board = {
@@ -65,6 +65,16 @@ export const boardReducer = (
 			columns: state.columns.filter(column => column.id !== action.payload.columnId)
 		};
 
+	case EDIT_COLUMN:
+		return {
+			...state,
+			columns: state.columns.map(column => 
+				column.id === action.payload.columnId
+					? { ...column, title: action.payload.newTitle }
+					: column
+			)
+		};
+
 	case ADD_CARD:
 		return {
 			...state,
@@ -93,7 +103,7 @@ export const boardReducer = (
 						...column,
 						cards: column.cards.map(card => 
 							card.id === action.payload.cardId
-								? { ...card, title: action.payload.newTitle }
+								? { ...card, ...action.payload.updates }
 								: card
 						)
 					}

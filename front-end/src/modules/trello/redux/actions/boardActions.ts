@@ -4,6 +4,7 @@ import {
 	ADD_CARD, 
 	ADD_COLUMN, 
 	DELETE_COLUMN,
+	EDIT_COLUMN,
 	EDIT_CARD,
 	DELETE_CARD,
 	MOVE_CARD, 
@@ -21,14 +22,19 @@ export const deleteColumn = (columnId: string): BoardActionTypes => ({
 	payload: { columnId }
 });
 
+export const editColumn = (columnId: string, newTitle: string): BoardActionTypes => ({
+	type: EDIT_COLUMN,
+	payload: { columnId, newTitle }
+});
+
 export const addCard = (columnId: string, title: string): BoardActionTypes => ({
 	type: ADD_CARD,
 	payload: { columnId, title }
 });
 
-export const editCard = (columnId: string, cardId: string, newTitle: string): BoardActionTypes => ({
+export const editCard = (columnId: string, cardId: string, updates: Partial<Card>): BoardActionTypes => ({
 	type: EDIT_CARD,
-	payload: { columnId, cardId, newTitle }
+	payload: { columnId, cardId, updates }
 });
 
 export const deleteCard = (columnId: string, cardId: string): BoardActionTypes => ({

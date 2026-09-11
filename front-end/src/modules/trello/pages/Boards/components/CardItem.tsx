@@ -2,16 +2,16 @@ import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Card } from '../../../interfaces/BoardInterface';
+import { CardDetailModal } from './CardDetailModal';
 
 interface CardItemProps {
 	card: Card;
-	onEdit: (cardId: string, newTitle: string) => void;
+	onEdit: (cardId: string, updates: Partial<Card>) => void;
 	onDelete: (cardId: string) => void;
 }
 
 export const CardItem = ({ card, onEdit, onDelete }: CardItemProps) => {
-	const [isEditing, setIsEditing] = useState(false);
-	const [editTitle, setEditTitle] = useState(card.title);
+	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	const {
 		attributes,
@@ -25,8 +25,7 @@ export const CardItem = ({ card, onEdit, onDelete }: CardItemProps) => {
 		data: {
 			type: 'card',
 			card
-		},
-		disabled: isEditing // Disable drag when editing
+		}
 	});
 
 	const style = {
@@ -35,66 +34,62 @@ export const CardItem = ({ card, onEdit, onDelete }: CardItemProps) => {
 		opacity: isDragging ? 0.5 : 1
 	};
 
-	const handleSave = () => {
-		if (editTitle.trim() && editTitle !== card.title) {
-			onEdit(card.id, editTitle.trim());
-		}
-		setIsEditing(false);
-	};
-
-	const handleKeyDown = (e: React.KeyboardEvent) => {
-		if (e.key === 'Enter') {
-			handleSave();
-		}
-		if (e.key === 'Escape') {
-			setEditTitle(card.title);
-			setIsEditing(false);
-		}
-	};
-
-	if (isEditing) {
-		return (
-			<div className="card-item bg-white rounded-2 shadow-sm p-2 mb-2">
-				<input
-					type="text"
-					className="form-control form-control-sm mb-2"
-					value={editTitle}
-					onChange={e => setEditTitle(e.target.value)}
-					onKeyDown={handleKeyDown}
-					autoFocus
-				/>
-				<div className="d-flex gap-1">
-					<button className="btn btn-primary btn-sm py-0" onClick={handleSave}>Save</button>
-					<button className="btn btn-light btn-sm py-0" onClick={() => { setEditTitle(card.title); setIsEditing(false); }}>Cancel</button>
-				</div>
-			</div>
-		);
-	}
+	const hasDetails = card.description || card.startDate || card.endDate || (card.members && card.members.length > 0);
 
 	return (
-		<div
-			ref={setNodeRef}
-			style={style}
-			{...attributes}
-			{...listeners}
-			className="card-item bg-white rounded-2 shadow-sm p-2 mb-2 cursor-pointer position-relative group-hover"
-		>
-			<span className="fs-8">{card.title}</span>
-			
-			<div className="position-absolute top-0 end-0 p-1 opacity-0 group-hover-opacity-100 d-flex gap-1 bg-white rounded">
-				<button 
-					className="btn btn-sm text-muted p-0 border-0" 
-					onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
-				>
-					<i className="bi bi-pencil fs-8"></i>
-				</button>
-				<button 
-					className="btn btn-sm text-danger p-0 border-0" 
-					onClick={(e) => { e.stopPropagation(); onDelete(card.id); }}
-				>
-					<i className="bi bi-trash fs-8"></i>
-				</button>
+		<>
+			<div
+				ref={setNodeRef}
+				style={style}
+				{...attributes}
+				{...listeners}
+				className="card-item bg-white rounded-2 shadow-sm p-2 mb-2 cursor-pointer position-relative group-hover"
+				onClick={() => setIsModalOpen(true)}
+			>
+				<span className="fs-8">{card.title}</span>
+				
+				{/* Details Indicators (Members, Dates, etc.) */}
+				{hasDetails && (
+					<div className="d-flex flex-wrap align-items-center gap-2 mt-2">
+						{(card.startDate || card.endDate) && (
+							<div className="badge bg-light text-dark fw-normal border">
+								<i className="bi bi-clock me-1"></i>
+								{card.startDate ? card.startDate.slice(5) : ''} 
+								{card.endDate ? ` - ${card.endDate.slice(5)}` : ''}
+							</div>
+						)}
+						{card.description && (
+							<i className="bi bi-justify-left text-muted fs-8"></i>
+						)}
+						{card.members && card.members.length > 0 && (
+							<div className="d-flex align-items-center ms-auto">
+								{card.members.map(m => (
+									<div key={m.id} className="avatar-circle ms-n1 border border-white rounded-circle" title={m.name} style={{ width: '20px', height: '20px' }}>
+										<img src={m.avatar} alt={m.name} className="w-100 h-100 rounded-circle" />
+									</div>
+								))}
+							</div>
+						)}
+					</div>
+				)}
+				
+				{/* Hover Actions */}
+				<div className="position-absolute top-0 end-0 p-1 opacity-0 group-hover-opacity-100 d-flex gap-1 bg-white rounded">
+					<button 
+						className="btn btn-sm text-danger p-0 border-0" 
+						onClick={(e) => { e.stopPropagation(); onDelete(card.id); }}
+					>
+						<i className="bi bi-trash fs-8"></i>
+					</button>
+				</div>
 			</div>
-		</div>
+
+			<CardDetailModal 
+				card={card}
+				isOpen={isModalOpen}
+				onClose={() => setIsModalOpen(false)}
+				onSave={(updates) => onEdit(card.id, updates)}
+			/>
+		</>
 	);
 };

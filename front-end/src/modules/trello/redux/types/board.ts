@@ -2,6 +2,7 @@ import { Card } from '../../interfaces/BoardInterface';
 
 export const ADD_COLUMN = 'ADD_COLUMN';
 export const DELETE_COLUMN = 'DELETE_COLUMN';
+export const EDIT_COLUMN = 'EDIT_COLUMN';
 export const ADD_CARD = 'ADD_CARD';
 export const EDIT_CARD = 'EDIT_CARD';
 export const DELETE_CARD = 'DELETE_CARD';
@@ -19,6 +20,11 @@ export interface DeleteColumnAction {
 	payload: { columnId: string };
 }
 
+export interface EditColumnAction {
+	type: typeof EDIT_COLUMN;
+	payload: { columnId: string; newTitle: string };
+}
+
 export interface AddCardAction {
 	type: typeof ADD_CARD;
 	payload: { columnId: string; title: string };
@@ -26,7 +32,7 @@ export interface AddCardAction {
 
 export interface EditCardAction {
 	type: typeof EDIT_CARD;
-	payload: { columnId: string; cardId: string; newTitle: string };
+	payload: { columnId: string; cardId: string; updates: Partial<Card> };
 }
 
 export interface DeleteCardAction {
@@ -60,6 +66,7 @@ export interface SetBoardAction {
 export type BoardActionTypes = 
 	| AddColumnAction 
 	| DeleteColumnAction
+	| EditColumnAction
 	| AddCardAction 
 	| EditCardAction
 	| DeleteCardAction

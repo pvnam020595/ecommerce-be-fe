@@ -25,6 +25,7 @@ import {
 	editCard, 
 	deleteCard, 
 	addColumn, 
+	editColumn,
 	deleteColumn, 
 	moveColumn 
 } from '../../redux/actions/boardActions';
@@ -183,6 +184,10 @@ export const Boards = () => {
 		}
 	};
 
+	const handleEditColumn = useCallback((columnId: string, newTitle: string) => {
+		dispatch(editColumn(columnId, newTitle));
+	}, [dispatch]);
+
 	const handleDeleteColumn = useCallback((columnId: string) => {
 		if (window.confirm('Are you sure you want to delete this list?')) {
 			dispatch(deleteColumn(columnId));
@@ -224,6 +229,7 @@ export const Boards = () => {
 								onAddCard={handleAddCard}
 								onEditCard={handleEditCard}
 								onDeleteCard={handleDeleteCard}
+								onEditColumn={handleEditColumn}
 								onDeleteColumn={handleDeleteColumn}
 							/>
 						))}
