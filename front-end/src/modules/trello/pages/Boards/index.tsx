@@ -168,13 +168,23 @@ export const Boards = () => {
 		dispatch(addCard(columnId, title));
 	}, [dispatch]);
 
-	const handleEditCard = useCallback((columnId: string, cardId: string, title: string) => {
-		dispatch(editCard(columnId, cardId, title));
+	const handleEditCard = useCallback((columnId: string, cardId: string, updates: Partial<Card>) => {
+		dispatch(editCard(columnId, cardId, updates));
 	}, [dispatch]);
 
 	const handleDeleteCard = useCallback((columnId: string, cardId: string) => {
 		dispatch(deleteCard(columnId, cardId));
 	}, [dispatch]);
+
+	const handleMoveCardToColumn = useCallback((card: Card, targetColumnId: string) => {
+		const sourceColumn = findColumnByCardId(card.id);
+		if (!sourceColumn || sourceColumn.id === targetColumnId) return;
+
+		const targetColumn = board.columns.find(col => col.id === targetColumnId);
+		if (!targetColumn) return;
+
+		dispatch(moveCard(card, sourceColumn.id, targetColumnId, targetColumn.cards.length));
+	}, [board.columns, dispatch, findColumnByCardId]);
 
 	const handleAddColumn = () => {
 		if (newColumnTitle.trim()) {
@@ -226,11 +236,13 @@ export const Boards = () => {
 							<ColumnContainer
 								key={column.id}
 								column={column}
+								allColumns={board.columns}
 								onAddCard={handleAddCard}
 								onEditCard={handleEditCard}
 								onDeleteCard={handleDeleteCard}
 								onEditColumn={handleEditColumn}
 								onDeleteColumn={handleDeleteColumn}
+								onMoveCard={handleMoveCardToColumn}
 							/>
 						))}
 					</SortableContext>

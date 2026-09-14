@@ -1,16 +1,26 @@
 import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Card } from '../../../interfaces/BoardInterface';
+import { Card, Column } from '../../../interfaces/BoardInterface';
 import { CardDetailModal } from './CardDetailModal';
 
 interface CardItemProps {
 	card: Card;
+	currentColumnId?: string;
+	columns?: Column[];
 	onEdit: (cardId: string, updates: Partial<Card>) => void;
 	onDelete: (cardId: string) => void;
+	onMoveCard?: (card: Card, targetColumnId: string) => void;
 }
 
-export const CardItem = ({ card, onEdit, onDelete }: CardItemProps) => {
+export const CardItem = ({
+	card,
+	currentColumnId,
+	columns,
+	onEdit,
+	onDelete,
+	onMoveCard
+}: CardItemProps) => {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	const {
@@ -86,9 +96,12 @@ export const CardItem = ({ card, onEdit, onDelete }: CardItemProps) => {
 
 			<CardDetailModal 
 				card={card}
+				currentColumnId={currentColumnId}
+				columns={columns}
 				isOpen={isModalOpen}
 				onClose={() => setIsModalOpen(false)}
 				onSave={(updates) => onEdit(card.id, updates)}
+				onMoveCard={onMoveCard}
 			/>
 		</>
 	);

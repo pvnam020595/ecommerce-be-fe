@@ -7,20 +7,24 @@ import { CardItem } from './CardItem';
 
 interface ColumnContainerProps {
 	column: Column;
+	allColumns?: Column[];
 	onAddCard: (columnId: string, title: string) => void;
 	onEditCard: (columnId: string, cardId: string, updates: Partial<Card>) => void;
 	onDeleteCard: (columnId: string, cardId: string) => void;
 	onEditColumn: (columnId: string, title: string) => void;
 	onDeleteColumn: (columnId: string) => void;
+	onMoveCard?: (card: Card, targetColumnId: string) => void;
 }
 
 export const ColumnContainer = ({ 
 	column, 
+	allColumns = [],
 	onAddCard, 
 	onEditCard, 
 	onDeleteCard, 
 	onEditColumn,
-	onDeleteColumn 
+	onDeleteColumn,
+	onMoveCard
 }: ColumnContainerProps) => {
 	const [isAdding, setIsAdding] = useState(false);
 	const [newCardTitle, setNewCardTitle] = useState('');
@@ -155,8 +159,11 @@ export const ColumnContainer = ({
 						<CardItem 
 							key={card.id} 
 							card={card} 
+							currentColumnId={column.id}
+							columns={allColumns}
 							onEdit={(cardId, updates) => onEditCard(column.id, cardId, updates)}
 							onDelete={(cardId) => onDeleteCard(column.id, cardId)}
+							onMoveCard={onMoveCard}
 						/>
 					))}
 				</SortableContext>
