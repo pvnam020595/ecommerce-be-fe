@@ -408,3 +408,12 @@ $ds-opacity-disabled: 0.4;
 $ds-opacity-loading: 0.2;
 $ds-UNSAFE-transparent: transparent;
 $ds-elevation-surface-current: #ffffff;
+
+// Typography and Base Theme Variables
+$font-family:
+	-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+	'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+$font-size: 14px;
+$line-height: 1.5;
+$text-color: $ds-text;
+$background-color: $ds-surface;

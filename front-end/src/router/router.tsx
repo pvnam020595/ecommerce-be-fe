@@ -1,14 +1,14 @@
-import App from '@/App';
 import { createBrowserRouter } from 'react-router';
-// Modules in project
+
+import App from '@/App';
 import Trello from '@modules/trello';
 import Ecommerce from '@modules/ecommerce';
-import { Boards } from '@/modules/trello/pages/Boards';
-import { Home } from '@modules/trello/pages/Home';
+import { Boards, Home } from '@modules/trello/pages';
+import { PATHS } from '@router/paths';
 
 const router = createBrowserRouter([
 	{
-		path: '/',
+		path: PATHS.ROOT,
 		element: <App />,
 		children: [
 			{
@@ -32,4 +32,5 @@ const router = createBrowserRouter([
 		]
 	}
 ]);
+
 export default router;

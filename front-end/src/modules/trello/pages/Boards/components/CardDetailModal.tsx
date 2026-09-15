@@ -24,9 +24,21 @@ interface CardFormData {
 }
 
 const MOCK_MEMBERS: readonly Member[] = [
-	{ id: 'm1', name: 'Nam Pham', avatar: 'https://avatars.githubusercontent.com/u/1?v=4' },
-	{ id: 'm2', name: 'John Doe', avatar: 'https://avatars.githubusercontent.com/u/2?v=4' },
-	{ id: 'm3', name: 'Jane Smith', avatar: 'https://avatars.githubusercontent.com/u/3?v=4' },
+	{
+		id: 'm1',
+		name: 'Nam Pham',
+		avatar: 'https://avatars.githubusercontent.com/u/1?v=4'
+	},
+	{
+		id: 'm2',
+		name: 'John Doe',
+		avatar: 'https://avatars.githubusercontent.com/u/2?v=4'
+	},
+	{
+		id: 'm3',
+		name: 'Jane Smith',
+		avatar: 'https://avatars.githubusercontent.com/u/3?v=4'
+	}
 ];
 
 // ==========================================
@@ -54,9 +66,12 @@ const useCardForm = (card: Card, isOpen: boolean) => {
 		}
 	}, [isOpen, card]);
 
-	const updateField = useCallback(<K extends keyof CardFormData>(key: K, value: CardFormData[K]) => {
-		setFormData(prev => ({ ...prev, [key]: value }));
-	}, []);
+	const updateField = useCallback(
+		<K extends keyof CardFormData>(key: K, value: CardFormData[K]) => {
+			setFormData(prev => ({ ...prev, [key]: value }));
+		},
+		[]
+	);
 
 	const toggleMember = useCallback((member: Member) => {
 		setFormData(prev => {
@@ -161,7 +176,10 @@ const StatusDropdownMenu: React.FC<StatusDropdownMenuProps> = ({
 
 	useEffect(() => {
 		const handleClickOutside = (e: MouseEvent) => {
-			if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+			if (
+				dropdownRef.current &&
+				!dropdownRef.current.contains(e.target as Node)
+			) {
 				setIsOpen(false);
 			}
 		};
@@ -217,7 +235,9 @@ const StatusDropdownMenu: React.FC<StatusDropdownMenuProps> = ({
 								}}
 							>
 								<span>{col.title}</span>
-								{isSelected && <i className="bi bi-check-lg ms-2"></i>}
+								{isSelected && (
+									<i className="bi bi-check-lg ms-2"></i>
+								)}
 							</button>
 						);
 					})}
@@ -243,7 +263,10 @@ const MembersSection: React.FC<MembersSectionProps> = ({
 	return (
 		<div>
 			<h6 className="text-muted fs-8 fw-semibold mb-2">Members</h6>
-			<div className="d-flex align-items-center gap-1 flex-wrap" style={{ minHeight: '32px' }}>
+			<div
+				className="d-flex align-items-center gap-1 flex-wrap"
+				style={{ minHeight: '32px' }}
+			>
 				{selectedMembers.map(m => (
 					<div
 						key={m.id}
@@ -251,7 +274,11 @@ const MembersSection: React.FC<MembersSectionProps> = ({
 						title={m.name}
 						style={{ width: '32px', height: '32px' }}
 					>
-						<img src={m.avatar} alt={m.name} className="w-100 h-100 rounded-circle" />
+						<img
+							src={m.avatar}
+							alt={m.name}
+							className="w-100 h-100 rounded-circle"
+						/>
 					</div>
 				))}
 				<div className="dropdown">
@@ -269,7 +296,9 @@ const MembersSection: React.FC<MembersSectionProps> = ({
 							<h6 className="dropdown-header">Assign members</h6>
 						</li>
 						{MOCK_MEMBERS.map(m => {
-							const isSelected = selectedMembers.some(sm => sm.id === m.id);
+							const isSelected = selectedMembers.some(
+								sm => sm.id === m.id
+							);
 							return (
 								<li key={m.id}>
 									<button
@@ -281,10 +310,15 @@ const MembersSection: React.FC<MembersSectionProps> = ({
 											src={m.avatar}
 											alt={m.name}
 											className="rounded-circle"
-											style={{ width: '24px', height: '24px' }}
+											style={{
+												width: '24px',
+												height: '24px'
+											}}
 										/>
 										<span>{m.name}</span>
-										{isSelected && <i className="bi bi-check2 ms-auto"></i>}
+										{isSelected && (
+											<i className="bi bi-check2 ms-auto"></i>
+										)}
 									</button>
 								</li>
 							);
@@ -316,7 +350,10 @@ const DatesSection: React.FC<DatesSectionProps> = ({
 	return (
 		<div>
 			<h6 className="text-muted fs-8 fw-semibold mb-2">Dates</h6>
-			<div className="d-flex align-items-center gap-2" style={{ height: '32px' }}>
+			<div
+				className="d-flex align-items-center gap-2"
+				style={{ height: '32px' }}
+			>
 				<div className="input-group input-group-sm h-100">
 					<span className="input-group-text bg-light text-muted border-end-0 px-2 py-0">
 						<i className="bi bi-calendar-event fs-8"></i>
@@ -407,7 +444,8 @@ const RichDescriptionEditor: React.FC<RichDescriptionEditorProps> = ({
 					dangerouslySetInnerHTML={{ __html: description }}
 				></div>
 				<div className="form-text fs-8 mt-1 text-muted">
-					Note: Real project should install react-quill or ckeditor-react.
+					Note: Real project should install react-quill or
+					ckeditor-react.
 				</div>
 			</div>
 		</div>
@@ -423,16 +461,28 @@ const SidebarActions: React.FC = () => {
 		<div className="col-md-3">
 			<h6 className="text-muted fs-8 fw-semibold mb-2">Add to card</h6>
 			<div className="d-flex flex-column gap-2">
-				<button type="button" className="btn btn-light btn-sm text-start">
+				<button
+					type="button"
+					className="btn btn-light btn-sm text-start"
+				>
 					<i className="bi bi-person me-2"></i> Members
 				</button>
-				<button type="button" className="btn btn-light btn-sm text-start">
+				<button
+					type="button"
+					className="btn btn-light btn-sm text-start"
+				>
 					<i className="bi bi-tag me-2"></i> Labels
 				</button>
-				<button type="button" className="btn btn-light btn-sm text-start">
+				<button
+					type="button"
+					className="btn btn-light btn-sm text-start"
+				>
 					<i className="bi bi-clock me-2"></i> Dates
 				</button>
-				<button type="button" className="btn btn-light btn-sm text-start">
+				<button
+					type="button"
+					className="btn btn-light btn-sm text-start"
+				>
 					<i className="bi bi-paperclip me-2"></i> Attachment
 				</button>
 			</div>
@@ -537,8 +587,12 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
 									<AutoResizeTitleTextarea
 										value={formData.title}
 										fallbackTitle={card.title}
-										onChange={val => updateField('title', val)}
-										onFinish={() => setIsEditingTitle(false)}
+										onChange={val =>
+											updateField('title', val)
+										}
+										onFinish={() =>
+											setIsEditingTitle(false)
+										}
 									/>
 								) : (
 									<div
@@ -548,9 +602,13 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
 										role="button"
 										tabIndex={0}
 										onKeyDown={e => {
-											if (e.key === 'Enter') setIsEditingTitle(true);
+											if (e.key === 'Enter')
+												setIsEditingTitle(true);
 										}}
-										style={{ minHeight: '34px', lineHeight: '1.4' }}
+										style={{
+											minHeight: '34px',
+											lineHeight: '1.4'
+										}}
 									>
 										{formData.title || card.title}
 									</div>
@@ -558,8 +616,14 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
 							</div>
 
 							{currentColumn && (
-								<div className="text-muted fs-8 mt-1" style={{ paddingLeft: '1.75rem' }}>
-									in list <span className="fw-semibold text-dark">{currentColumn.title}</span>
+								<div
+									className="text-muted fs-8 mt-1"
+									style={{ paddingLeft: '1.75rem' }}
+								>
+									in list{' '}
+									<span className="fw-semibold text-dark">
+										{currentColumn.title}
+									</span>
 								</div>
 							)}
 						</div>
@@ -576,14 +640,20 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
 										<DatesSection
 											startDate={formData.startDate}
 											endDate={formData.endDate}
-											onChangeStartDate={val => updateField('startDate', val)}
-											onChangeEndDate={val => updateField('endDate', val)}
+											onChangeStartDate={val =>
+												updateField('startDate', val)
+											}
+											onChangeEndDate={val =>
+												updateField('endDate', val)
+											}
 										/>
 									</div>
 
 									<RichDescriptionEditor
 										description={formData.description}
-										onDescriptionChange={val => updateField('description', val)}
+										onDescriptionChange={val =>
+											updateField('description', val)
+										}
 									/>
 								</div>
 
@@ -593,10 +663,18 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
 
 						{/* Footer */}
 						<div className="modal-footer border-0">
-							<button type="button" className="btn btn-secondary me-2" onClick={onClose}>
+							<button
+								type="button"
+								className="btn btn-secondary me-2"
+								onClick={onClose}
+							>
 								Cancel
 							</button>
-							<button type="button" className="btn btn-primary" onClick={handleSave}>
+							<button
+								type="button"
+								className="btn btn-primary"
+								onClick={handleSave}
+							>
 								Save Changes
 							</button>
 						</div>

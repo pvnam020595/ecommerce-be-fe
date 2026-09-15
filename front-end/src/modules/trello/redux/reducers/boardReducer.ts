@@ -1,5 +1,16 @@
 import { v4 as uuidv4 } from 'uuid';
-import { ADD_COLUMN, DELETE_COLUMN, EDIT_COLUMN, ADD_CARD, EDIT_CARD, DELETE_CARD, MOVE_CARD, MOVE_COLUMN, SET_BOARD, BoardActionTypes } from '../types/board';
+import {
+	ADD_COLUMN,
+	DELETE_COLUMN,
+	EDIT_COLUMN,
+	ADD_CARD,
+	EDIT_CARD,
+	DELETE_CARD,
+	MOVE_CARD,
+	MOVE_COLUMN,
+	SET_BOARD,
+	BoardActionTypes
+} from '../types/board';
 import { Board } from '../../interfaces/BoardInterface';
 
 const initialState: Board = {
@@ -26,9 +37,7 @@ const initialState: Board = {
 		{
 			id: uuidv4(),
 			title: 'Review',
-			cards: [
-				{ id: uuidv4(), title: 'Code review: payment module' }
-			]
+			cards: [{ id: uuidv4(), title: 'Code review: payment module' }]
 		},
 		{
 			id: uuidv4(),
@@ -46,123 +55,130 @@ export const boardReducer = (
 	action: BoardActionTypes
 ): Board => {
 	switch (action.type) {
-	case ADD_COLUMN:
-		return {
-			...state,
-			columns: [
-				...state.columns,
-				{
-					id: uuidv4(),
-					title: action.payload.title,
-					cards: []
-				}
-			]
-		};
+		case ADD_COLUMN:
+			return {
+				...state,
+				columns: [
+					...state.columns,
+					{
+						id: uuidv4(),
+						title: action.payload.title,
+						cards: []
+					}
+				]
+			};
 
-	case DELETE_COLUMN:
-		return {
-			...state,
-			columns: state.columns.filter(column => column.id !== action.payload.columnId)
-		};
+		case DELETE_COLUMN:
+			return {
+				...state,
+				columns: state.columns.filter(
+					column => column.id !== action.payload.columnId
+				)
+			};
 
-	case EDIT_COLUMN:
-		return {
-			...state,
-			columns: state.columns.map(column => 
-				column.id === action.payload.columnId
-					? { ...column, title: action.payload.newTitle }
-					: column
-			)
-		};
+		case EDIT_COLUMN:
+			return {
+				...state,
+				columns: state.columns.map(column =>
+					column.id === action.payload.columnId
+						? { ...column, title: action.payload.newTitle }
+						: column
+				)
+			};
 
-	case ADD_CARD:
-		return {
-			...state,
-			columns: state.columns.map(column =>
-				column.id === action.payload.columnId
-					? {
-						...column,
-						cards: [
-							...column.cards,
-							{
-								id: uuidv4(),
-								title: action.payload.title
+		case ADD_CARD:
+			return {
+				...state,
+				columns: state.columns.map(column =>
+					column.id === action.payload.columnId
+						? {
+								...column,
+								cards: [
+									...column.cards,
+									{
+										id: uuidv4(),
+										title: action.payload.title
+									}
+								]
 							}
-						]
+						: column
+				)
+			};
+
+		case EDIT_CARD:
+			return {
+				...state,
+				columns: state.columns.map(column =>
+					column.id === action.payload.columnId
+						? {
+								...column,
+								cards: column.cards.map(card =>
+									card.id === action.payload.cardId
+										? { ...card, ...action.payload.updates }
+										: card
+								)
+							}
+						: column
+				)
+			};
+
+		case DELETE_CARD:
+			return {
+				...state,
+				columns: state.columns.map(column =>
+					column.id === action.payload.columnId
+						? {
+								...column,
+								cards: column.cards.filter(
+									card => card.id !== action.payload.cardId
+								)
+							}
+						: column
+				)
+			};
+
+		case MOVE_CARD: {
+			const { card, sourceColumnId, destinationColumnId, newIndex } =
+				action.payload;
+			const newColumns = state.columns
+				.map(column => {
+					if (column.id === sourceColumnId) {
+						return {
+							...column,
+							cards: column.cards.filter(c => c.id !== card.id)
+						};
 					}
-					: column
-			)
-		};
-
-	case EDIT_CARD:
-		return {
-			...state,
-			columns: state.columns.map(column =>
-				column.id === action.payload.columnId
-					? {
-						...column,
-						cards: column.cards.map(card => 
-							card.id === action.payload.cardId
-								? { ...card, ...action.payload.updates }
-								: card
-						)
+					return column;
+				})
+				.map(column => {
+					if (column.id === destinationColumnId) {
+						const newCards = [...column.cards];
+						newCards.splice(newIndex, 0, card);
+						return {
+							...column,
+							cards: newCards
+						};
 					}
-					: column
-			)
-		};
+					return column;
+				});
+			return { ...state, columns: newColumns };
+		}
 
-	case DELETE_CARD:
-		return {
-			...state,
-			columns: state.columns.map(column =>
-				column.id === action.payload.columnId
-					? {
-						...column,
-						cards: column.cards.filter(card => card.id !== action.payload.cardId)
-					}
-					: column
-			)
-		};
+		case MOVE_COLUMN: {
+			const { sourceIndex, destinationIndex } = action.payload;
+			const newColumns = [...state.columns];
+			const [movedColumn] = newColumns.splice(sourceIndex, 1);
+			newColumns.splice(destinationIndex, 0, movedColumn);
+			return { ...state, columns: newColumns };
+		}
 
-	case MOVE_CARD: {
-		const { card, sourceColumnId, destinationColumnId, newIndex } = action.payload;
-		const newColumns = state.columns.map(column => {
-			if (column.id === sourceColumnId) {
-				return {
-					...column,
-					cards: column.cards.filter(c => c.id !== card.id)
-				};
-			}
-			return column;
-		}).map(column => {
-			if (column.id === destinationColumnId) {
-				const newCards = [...column.cards];
-				newCards.splice(newIndex, 0, card);
-				return {
-					...column,
-					cards: newCards
-				};
-			}
-			return column;
-		});
-		return { ...state, columns: newColumns };
-	}
+		case SET_BOARD:
+			return {
+				...state,
+				columns: action.payload.columns
+			};
 
-	case MOVE_COLUMN: {
-		const { sourceIndex, destinationIndex } = action.payload;
-		const newColumns = [...state.columns];
-		const [movedColumn] = newColumns.splice(sourceIndex, 1);
-		newColumns.splice(destinationIndex, 0, movedColumn);
-		return { ...state, columns: newColumns };
-	}
-
-	case SET_BOARD:
-		return {
-			...state,
-			columns: action.payload.columns
-		};
-
-	default:
-		return state;
+		default:
+			return state;
 	}
 };

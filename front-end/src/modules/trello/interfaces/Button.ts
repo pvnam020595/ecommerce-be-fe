@@ -1,6 +1,6 @@
-interface ButtonPropsInterface {
+interface ButtonPropsInterface
+	extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 	children: React.ReactNode;
-	onClick?: () => void;
-	className?: string;
+	className: string;
 }
 export default ButtonPropsInterface;

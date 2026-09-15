@@ -1,13 +1,12 @@
-import { Login } from '@modules/trello/pages/Login/index.tsx';
 import { useSelector } from 'react-redux';
 import { Outlet } from 'react-router-dom';
-import type {RootState} from '../../redux/store.ts';
+import { Login } from '@modules/trello/pages';
+import type { RootState } from '@redux/store';
 
 function Trello() {
-	// const isLoginedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
-	const isLoginedIn = true;
+	const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
 
-	if (isLoginedIn) {
+	if (isLoggedIn) {
 		return <Outlet />;
 	}
 	return <Login />;

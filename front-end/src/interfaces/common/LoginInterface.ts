@@ -1,17 +1,24 @@
-interface User {
+export interface User {
 	id: string;
 	name: string;
 	email: string;
+	avatar?: string;
 }
 
-interface LoginState {
+export interface LoginState {
 	isLoggedIn: boolean;
-	user?: User | null;
+	user: User | null;
 }
 
-interface LoginAction {
-	type: string;
-	payload?: User;
+export interface LoginAction {
+	type: 'LOGIN';
+	payload: User;
+	[key: string]: unknown;
 }
 
-export { LoginState, LoginAction };
+export interface LogoutAction {
+	type: 'LOGOUT';
+	[key: string]: unknown;
+}
+
+export type AuthAction = LoginAction | LogoutAction;

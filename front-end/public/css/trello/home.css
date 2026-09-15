@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", sans-serif;
   font-size: 10px;
 }
@@ -177,7 +178,7 @@ html, body {
 .trello-main-content .workspace-logo-xl {
   width: 6rem;
   height: 6rem;
-  background: linear-gradient(135deg, #FF7A59, #FF8F73);
+  background: linear-gradient(135deg, #ff7a59, #ff8f73);
 }
 .trello-main-content .section-icon-box {
   width: 3.2rem;

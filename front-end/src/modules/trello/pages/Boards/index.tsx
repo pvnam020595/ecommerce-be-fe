@@ -19,15 +19,15 @@ import {
 } from '@dnd-kit/sortable';
 import { TrelloRootState } from '../../redux/store';
 import { Card, Column } from '../../interfaces/BoardInterface';
-import { 
-	moveCard, 
-	addCard, 
-	editCard, 
-	deleteCard, 
-	addColumn, 
+import {
+	moveCard,
+	addCard,
+	editCard,
+	deleteCard,
+	addColumn,
 	editColumn,
-	deleteColumn, 
-	moveColumn 
+	deleteColumn,
+	moveColumn
 } from '../../redux/actions/boardActions';
 import { ColumnContainer } from './components/ColumnContainer';
 import '@css/trello/board.css';
@@ -52,9 +52,14 @@ export const Boards = () => {
 		})
 	);
 
-	const findColumnByCardId = useCallback((cardId: string): Column | undefined => {
-		return board.columns.find(col => col.cards.some(card => card.id === cardId));
-	}, [board.columns]);
+	const findColumnByCardId = useCallback(
+		(cardId: string): Column | undefined => {
+			return board.columns.find(col =>
+				col.cards.some(card => card.id === cardId)
+			);
+		},
+		[board.columns]
+	);
 
 	const handleDragStart = (event: DragStartEvent) => {
 		const { active } = event;
@@ -62,7 +67,9 @@ export const Boards = () => {
 
 		// Dragging a column
 		if (activeData?.type === 'column') {
-			const column = (activeData.column as Column) || board.columns.find(col => col.id === active.id);
+			const column =
+				(activeData.column as Column) ||
+				board.columns.find(col => col.id === active.id);
 			if (column) {
 				setActiveColumn(column);
 			}
@@ -70,8 +77,11 @@ export const Boards = () => {
 		}
 
 		// Dragging a card
-		const card = (activeData?.card as Card | undefined) ||
-			board.columns.flatMap(col => col.cards).find(c => c.id === active.id);
+		const card =
+			(activeData?.card as Card | undefined) ||
+			board.columns
+				.flatMap(col => col.cards)
+				.find(c => c.id === active.id);
 		if (card) {
 			setActiveCard(card);
 		}
@@ -98,7 +108,8 @@ export const Boards = () => {
 			destColumn = findColumnByCardId(overId);
 		}
 
-		if (!sourceColumn || !destColumn || sourceColumn.id === destColumn.id) return;
+		if (!sourceColumn || !destColumn || sourceColumn.id === destColumn.id)
+			return;
 
 		const draggedCard = sourceColumn.cards.find(c => c.id === activeId);
 		if (!draggedCard) return;
@@ -111,7 +122,9 @@ export const Boards = () => {
 			}
 		}
 
-		dispatch(moveCard(draggedCard, sourceColumn.id, destColumn.id, newIndex));
+		dispatch(
+			moveCard(draggedCard, sourceColumn.id, destColumn.id, newIndex)
+		);
 	};
 
 	const handleDragEnd = (event: DragEndEvent) => {
@@ -141,10 +154,18 @@ export const Boards = () => {
 			}
 
 			if (activeId !== overColId) {
-				const sourceIndex = board.columns.findIndex(col => col.id === activeId);
-				const destinationIndex = board.columns.findIndex(col => col.id === overColId);
+				const sourceIndex = board.columns.findIndex(
+					col => col.id === activeId
+				);
+				const destinationIndex = board.columns.findIndex(
+					col => col.id === overColId
+				);
 
-				if (sourceIndex !== -1 && destinationIndex !== -1 && sourceIndex !== destinationIndex) {
+				if (
+					sourceIndex !== -1 &&
+					destinationIndex !== -1 &&
+					sourceIndex !== destinationIndex
+				) {
 					dispatch(moveColumn(sourceIndex, destinationIndex));
 				}
 			}
@@ -159,32 +180,60 @@ export const Boards = () => {
 		if (overIndex >= 0) {
 			const draggedCard = sourceColumn.cards.find(c => c.id === activeId);
 			if (draggedCard) {
-				dispatch(moveCard(draggedCard, sourceColumn.id, sourceColumn.id, overIndex));
+				dispatch(
+					moveCard(
+						draggedCard,
+						sourceColumn.id,
+						sourceColumn.id,
+						overIndex
+					)
+				);
 			}
 		}
 	};
 
-	const handleAddCard = useCallback((columnId: string, title: string) => {
-		dispatch(addCard(columnId, title));
-	}, [dispatch]);
+	const handleAddCard = useCallback(
+		(columnId: string, title: string) => {
+			dispatch(addCard(columnId, title));
+		},
+		[dispatch]
+	);
 
-	const handleEditCard = useCallback((columnId: string, cardId: string, updates: Partial<Card>) => {
-		dispatch(editCard(columnId, cardId, updates));
-	}, [dispatch]);
+	const handleEditCard = useCallback(
+		(columnId: string, cardId: string, updates: Partial<Card>) => {
+			dispatch(editCard(columnId, cardId, updates));
+		},
+		[dispatch]
+	);
 
-	const handleDeleteCard = useCallback((columnId: string, cardId: string) => {
-		dispatch(deleteCard(columnId, cardId));
-	}, [dispatch]);
+	const handleDeleteCard = useCallback(
+		(columnId: string, cardId: string) => {
+			dispatch(deleteCard(columnId, cardId));
+		},
+		[dispatch]
+	);
 
-	const handleMoveCardToColumn = useCallback((card: Card, targetColumnId: string) => {
-		const sourceColumn = findColumnByCardId(card.id);
-		if (!sourceColumn || sourceColumn.id === targetColumnId) return;
+	const handleMoveCardToColumn = useCallback(
+		(card: Card, targetColumnId: string) => {
+			const sourceColumn = findColumnByCardId(card.id);
+			if (!sourceColumn || sourceColumn.id === targetColumnId) return;
 
-		const targetColumn = board.columns.find(col => col.id === targetColumnId);
-		if (!targetColumn) return;
+			const targetColumn = board.columns.find(
+				col => col.id === targetColumnId
+			);
+			if (!targetColumn) return;
 
-		dispatch(moveCard(card, sourceColumn.id, targetColumnId, targetColumn.cards.length));
-	}, [board.columns, dispatch, findColumnByCardId]);
+			dispatch(
+				moveCard(
+					card,
+					sourceColumn.id,
+					targetColumnId,
+					targetColumn.cards.length
+				)
+			);
+		},
+		[board.columns, dispatch, findColumnByCardId]
+	);
 
 	const handleAddColumn = () => {
 		if (newColumnTitle.trim()) {
@@ -194,15 +243,21 @@ export const Boards = () => {
 		}
 	};
 
-	const handleEditColumn = useCallback((columnId: string, newTitle: string) => {
-		dispatch(editColumn(columnId, newTitle));
-	}, [dispatch]);
+	const handleEditColumn = useCallback(
+		(columnId: string, newTitle: string) => {
+			dispatch(editColumn(columnId, newTitle));
+		},
+		[dispatch]
+	);
 
-	const handleDeleteColumn = useCallback((columnId: string) => {
-		if (window.confirm('Are you sure you want to delete this list?')) {
-			dispatch(deleteColumn(columnId));
-		}
-	}, [dispatch]);
+	const handleDeleteColumn = useCallback(
+		(columnId: string) => {
+			if (window.confirm('Are you sure you want to delete this list?')) {
+				dispatch(deleteColumn(columnId));
+			}
+		},
+		[dispatch]
+	);
 
 	return (
 		<div className="board-container">
@@ -251,15 +306,22 @@ export const Boards = () => {
 						{activeColumn ? (
 							<div className="board-column d-flex flex-column rounded-3 column-overlay">
 								<div className="column-header d-flex align-items-center justify-content-between px-2 pt-2 pb-1">
-									<h6 className="fw-bold m-0 fs-7 text-truncate">{activeColumn.title}</h6>
+									<h6 className="fw-bold m-0 fs-7 text-truncate">
+										{activeColumn.title}
+									</h6>
 									<button className="btn btn-sm p-0 border-0 text-muted">
 										<i className="bi bi-three-dots-vertical"></i>
 									</button>
 								</div>
 								<div className="column-cards flex-grow-1 overflow-auto px-2 py-1">
 									{activeColumn.cards.map(card => (
-										<div key={card.id} className="card-item bg-white rounded-2 shadow-sm p-2 mb-2">
-											<span className="fs-8">{card.title}</span>
+										<div
+											key={card.id}
+											className="card-item bg-white rounded-2 shadow-sm p-2 mb-2"
+										>
+											<span className="fs-8">
+												{card.title}
+											</span>
 										</div>
 									))}
 								</div>
@@ -282,20 +344,31 @@ export const Boards = () => {
 								className="form-control form-control-sm mb-2"
 								placeholder="Enter list title..."
 								value={newColumnTitle}
-								onChange={e => setNewColumnTitle(e.target.value)}
+								onChange={e =>
+									setNewColumnTitle(e.target.value)
+								}
 								onKeyDown={e => {
 									if (e.key === 'Enter') handleAddColumn();
-									if (e.key === 'Escape') { setIsAddingColumn(false); setNewColumnTitle(''); }
+									if (e.key === 'Escape') {
+										setIsAddingColumn(false);
+										setNewColumnTitle('');
+									}
 								}}
 								autoFocus
 							/>
 							<div className="d-flex align-items-center gap-1">
-								<button className="btn btn-primary btn-sm fw-semibold" onClick={handleAddColumn}>
+								<button
+									className="btn btn-primary btn-sm fw-semibold"
+									onClick={handleAddColumn}
+								>
 									Add list
 								</button>
 								<button
 									className="btn btn-sm text-muted p-1"
-									onClick={() => { setIsAddingColumn(false); setNewColumnTitle(''); }}
+									onClick={() => {
+										setIsAddingColumn(false);
+										setNewColumnTitle('');
+									}}
 								>
 									<i className="bi bi-x-lg"></i>
 								</button>

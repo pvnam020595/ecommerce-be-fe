@@ -22,10 +22,16 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-    "baseUrl": ".",
+    "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"],
+      "@components/*": ["src/components/*"],
       "@modules/*": ["src/modules/*"],
+      "@router/*": ["src/router/*"],
+      "@interfaces/*": ["src/interfaces/*"],
+      "@redux/*": ["src/redux/*"],
+      "@assets/*": ["src/assets/*"],
+      "@mock/*": ["src/mock/*"],
       "@css/*": ["public/css/*"]
     }
   },

@@ -8,7 +8,14 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			'@': path.resolve(__dirname, './src'),
+			'@components': path.resolve(__dirname, './src/components'),
 			'@modules': path.resolve(__dirname, './src/modules'),
+			'@router': path.resolve(__dirname, './src/router'),
+			'@interfaces': path.resolve(__dirname, './src/interfaces'),
+			'@redux': path.resolve(__dirname, './src/redux'),
+			'@assets': path.resolve(__dirname, './src/assets'),
+			'@mock': path.resolve(__dirname, './src/mock'),
+			'@mocks': path.resolve(__dirname, './src/mocks'),
 			'@css': path.resolve(__dirname, './public/css'),
 		},
 	},

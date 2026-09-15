@@ -1,27 +1,35 @@
 import { useState } from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import {
+	useSortable,
+	SortableContext,
+	verticalListSortingStrategy
+} from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Column } from '../../../interfaces/BoardInterface';
+import { Column, Card } from '@modules/trello/interfaces/BoardInterface';
 import { CardItem } from './CardItem';
 
 interface ColumnContainerProps {
 	column: Column;
 	allColumns?: Column[];
 	onAddCard: (columnId: string, title: string) => void;
-	onEditCard: (columnId: string, cardId: string, updates: Partial<Card>) => void;
+	onEditCard: (
+		columnId: string,
+		cardId: string,
+		updates: Partial<Card>
+	) => void;
 	onDeleteCard: (columnId: string, cardId: string) => void;
 	onEditColumn: (columnId: string, title: string) => void;
 	onDeleteColumn: (columnId: string) => void;
 	onMoveCard?: (card: Card, targetColumnId: string) => void;
 }
 
-export const ColumnContainer = ({ 
-	column, 
+export const ColumnContainer = ({
+	column,
 	allColumns = [],
-	onAddCard, 
-	onEditCard, 
-	onDeleteCard, 
+	onAddCard,
+	onEditCard,
+	onDeleteCard,
 	onEditColumn,
 	onDeleteColumn,
 	onMoveCard
@@ -114,7 +122,7 @@ export const ColumnContainer = ({
 						autoFocus
 					/>
 				) : (
-					<h6 
+					<h6
 						className="fw-bold m-0 fs-7 text-truncate flex-grow-1 column-drag-handle"
 						{...attributes}
 						{...listeners}
@@ -132,16 +140,20 @@ export const ColumnContainer = ({
 						<i className="bi bi-three-dots"></i>
 					</button>
 					{showMenu && (
-						<ul className="dropdown-menu show position-absolute end-0" style={{ zIndex: 1000 }}>
+						<ul
+							className="dropdown-menu show position-absolute end-0"
+							style={{ zIndex: 1000 }}
+						>
 							<li>
-								<button 
+								<button
 									className="dropdown-item text-danger d-flex align-items-center gap-2"
 									onClick={() => {
 										onDeleteColumn(column.id);
 										setShowMenu(false);
 									}}
 								>
-									<i className="bi bi-trash"></i> Delete Column
+									<i className="bi bi-trash"></i> Delete
+									Column
 								</button>
 							</li>
 						</ul>
@@ -150,19 +162,24 @@ export const ColumnContainer = ({
 			</div>
 
 			{/* Cards Container */}
-			<div ref={setDroppableNodeRef} className="column-cards flex-grow-1 overflow-auto px-2 py-1">
+			<div
+				ref={setDroppableNodeRef}
+				className="column-cards flex-grow-1 overflow-auto px-2 py-1"
+			>
 				<SortableContext
 					items={column.cards.map(c => c.id)}
 					strategy={verticalListSortingStrategy}
 				>
 					{column.cards.map(card => (
-						<CardItem 
-							key={card.id} 
-							card={card} 
+						<CardItem
+							key={card.id}
+							card={card}
 							currentColumnId={column.id}
 							columns={allColumns}
-							onEdit={(cardId, updates) => onEditCard(column.id, cardId, updates)}
-							onDelete={(cardId) => onDeleteCard(column.id, cardId)}
+							onEdit={(cardId, updates) =>
+								onEditCard(column.id, cardId, updates)
+							}
+							onDelete={cardId => onDeleteCard(column.id, cardId)}
 							onMoveCard={onMoveCard}
 						/>
 					))}
@@ -191,7 +208,10 @@ export const ColumnContainer = ({
 							</button>
 							<button
 								className="btn btn-sm text-muted p-1"
-								onClick={() => { setIsAdding(false); setNewCardTitle(''); }}
+								onClick={() => {
+									setIsAdding(false);
+									setNewCardTitle('');
+								}}
 							>
 								<i className="bi bi-x-lg"></i>
 							</button>
@@ -208,9 +228,9 @@ export const ColumnContainer = ({
 				)}
 			</div>
 			{showMenu && (
-				<div 
-					className="position-fixed top-0 start-0 w-100 h-100" 
-					style={{ zIndex: 999 }} 
+				<div
+					className="position-fixed top-0 start-0 w-100 h-100"
+					style={{ zIndex: 999 }}
 					onClick={() => setShowMenu(false)}
 				></div>
 			)}

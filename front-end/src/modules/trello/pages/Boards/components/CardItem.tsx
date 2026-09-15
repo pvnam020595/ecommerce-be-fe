@@ -44,7 +44,11 @@ export const CardItem = ({
 		opacity: isDragging ? 0.5 : 1
 	};
 
-	const hasDetails = card.description || card.startDate || card.endDate || (card.members && card.members.length > 0);
+	const hasDetails =
+		card.description ||
+		card.startDate ||
+		card.endDate ||
+		(card.members && card.members.length > 0);
 
 	return (
 		<>
@@ -57,15 +61,17 @@ export const CardItem = ({
 				onClick={() => setIsModalOpen(true)}
 			>
 				<span className="fs-8">{card.title}</span>
-				
+
 				{/* Details Indicators (Members, Dates, etc.) */}
 				{hasDetails && (
 					<div className="d-flex flex-wrap align-items-center gap-2 mt-2">
 						{(card.startDate || card.endDate) && (
 							<div className="badge bg-light text-dark fw-normal border">
 								<i className="bi bi-clock me-1"></i>
-								{card.startDate ? card.startDate.slice(5) : ''} 
-								{card.endDate ? ` - ${card.endDate.slice(5)}` : ''}
+								{card.startDate ? card.startDate.slice(5) : ''}
+								{card.endDate
+									? ` - ${card.endDate.slice(5)}`
+									: ''}
 							</div>
 						)}
 						{card.description && (
@@ -74,33 +80,48 @@ export const CardItem = ({
 						{card.members && card.members.length > 0 && (
 							<div className="d-flex align-items-center ms-auto">
 								{card.members.map(m => (
-									<div key={m.id} className="avatar-circle ms-n1 border border-white rounded-circle" title={m.name} style={{ width: '20px', height: '20px' }}>
-										<img src={m.avatar} alt={m.name} className="w-100 h-100 rounded-circle" />
+									<div
+										key={m.id}
+										className="avatar-circle ms-n1 border border-white rounded-circle"
+										title={m.name}
+										style={{
+											width: '20px',
+											height: '20px'
+										}}
+									>
+										<img
+											src={m.avatar}
+											alt={m.name}
+											className="w-100 h-100 rounded-circle"
+										/>
 									</div>
 								))}
 							</div>
 						)}
 					</div>
 				)}
-				
+
 				{/* Hover Actions */}
 				<div className="position-absolute top-0 end-0 p-1 opacity-0 group-hover-opacity-100 d-flex gap-1 bg-white rounded">
-					<button 
-						className="btn btn-sm text-danger p-0 border-0" 
-						onClick={(e) => { e.stopPropagation(); onDelete(card.id); }}
+					<button
+						className="btn btn-sm text-danger p-0 border-0"
+						onClick={e => {
+							e.stopPropagation();
+							onDelete(card.id);
+						}}
 					>
 						<i className="bi bi-trash fs-8"></i>
 					</button>
 				</div>
 			</div>
 
-			<CardDetailModal 
+			<CardDetailModal
 				card={card}
 				currentColumnId={currentColumnId}
 				columns={columns}
 				isOpen={isModalOpen}
 				onClose={() => setIsModalOpen(false)}
-				onSave={(updates) => onEdit(card.id, updates)}
+				onSave={updates => onEdit(card.id, updates)}
 				onMoveCard={onMoveCard}
 			/>
 		</>
