@@ -35,79 +35,123 @@ body {
 
 // --- NAVBAR ---
 .trello-navbar {
-	height: $trello-navbar-height;
-	background-color: variables.$ds-surface;
-	border-bottom: 0.1rem solid variables.$ds-border;
-	padding: 0 1.6rem;
+	height: 5.6rem;
+	background-color: #ffffff;
+	border-bottom: 0.1rem solid #e2e8f0;
+	padding: 0 2.4rem;
 
-	.trello-logo-icon {
-		color: #0c66e4;
-		font-size: 3rem;
+	.plannr-logo-icon {
+		width: 2.8rem;
+		height: 2.8rem;
+		flex-shrink: 0;
 	}
-	.logo-text {
-		font-family: 'Charlie Display', sans-serif;
-		letter-spacing: -0.05rem;
-		font-size: 2.4rem;
+
+	.plannr-logo-text {
+		font-size: 1.8rem;
 		font-weight: 700;
-		color: variables.$ds-text-subtle;
+		color: #172b4d;
+		line-height: 2.2rem;
+		letter-spacing: -0.02rem;
+	}
+
+	.plannr-nav-divider {
+		width: 0.1rem;
+		height: 1.6rem;
+		background-color: #e2e8f0;
+		margin: 0 0.8rem;
 	}
 
 	.nav-link {
-		font-size: 1.5rem;
+		font-size: 1.4rem;
+		font-weight: 500;
+		color: #44546f;
 		padding: 0.6rem 1.2rem;
+		transition: all 0.15s ease;
+
 		&:hover {
-			background-color: variables.$ds-background-neutral-hovered;
+			background-color: #f1f3f5;
+			color: #172b4d;
 		}
-	}
 
-	.create-btn {
-		background-color: variables.$ds-background-brand-bold;
-		border: none;
-		font-size: 1.5rem;
-		&:hover {
-			background-color: variables.$ds-background-brand-bold-hovered;
-		}
-	}
+		&.nav-link-active {
+			background-color: #eef2ff;
+			color: #4f46e5;
+			font-weight: 600;
 
-	.search-bar {
-		width: 40rem;
-		border: 0.1rem solid variables.$ds-border;
-		background-color: variables.$ds-surface;
-		transition: width 0.2s ease;
-		height: 3.2rem;
-
-		input {
-			font-size: 1.5rem;
-			&:focus {
-				box-shadow: none;
+			&:hover {
+				background-color: #e0e7ff;
+				color: #4338ca;
 			}
 		}
-		&:focus-within {
-			width: 70rem;
-			border-color: variables.$ds-border-focused;
-			box-shadow: 0 0 0 0.2rem variables.$ds-background-selected;
+	}
+
+	.search-box {
+		width: 24rem;
+		height: 3.6rem;
+		background-color: #f1f3f5;
+		border: 0.1rem solid #e2e8f0;
+		border-radius: 1.8rem;
+		padding: 0 1.2rem;
+		cursor: text;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.8rem;
+		transition: border-color 0.15s ease, background-color 0.15s ease;
+
+		&:hover {
+			background-color: #e9ecef;
+			border-color: #cbd5e1;
 		}
-		.bi-search {
-			font-size: 1.8rem;
+
+		.search-placeholder {
+			font-size: 1.3rem;
+			color: #626f86;
+			user-select: none;
+			flex: 1;
+		}
+
+		.search-shortcut {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			min-width: 1.6rem;
+			height: 1.6rem;
+			padding: 0 0.3rem;
+			font-size: 1rem;
+			font-weight: 600;
+			color: #626f86;
+			background-color: #ffffff;
+			border-radius: 0.4rem;
+			box-shadow: 0 0.1rem 0.2rem rgba(0, 0, 0, 0.05);
+			line-height: 1;
+		}
+
+		.search-icon {
+			color: #44546f;
 		}
 	}
 
 	.btn-icon {
-		width: 3.2rem;
-		height: 3.2rem;
+		width: 3.4rem;
+		height: 3.4rem;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		color: variables.$ds-icon;
-		font-size: 1.8rem;
+		color: #44546f;
+		border: none;
+		background: transparent;
+		transition: background-color 0.15s ease;
+
 		&:hover {
-			background-color: variables.$ds-background-neutral-hovered;
+			background-color: #f1f3f5;
+			color: #172b4d;
 		}
 	}
 
 	.avatar-circle {
-		width: 2.8rem;
-		height: 2.8rem;
+		width: 3.2rem;
+		height: 3.2rem;
 		border-radius: 50%;
 		display: flex;
 		align-items: center;
@@ -115,7 +159,7 @@ body {
 		transition: opacity 0.2s;
 
 		&:hover {
-			opacity: 0.8;
+			opacity: 0.85;
 		}
 	}
 

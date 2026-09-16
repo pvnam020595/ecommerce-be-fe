@@ -7,6 +7,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 
 import { PATHS, PLATFORM_ROUTES, type PlatformKey } from '@router/paths';
 import { PLATFORM_OPTIONS } from '@mock/ui';
+import Button from '@/components/common/Button/Button';
 
 function App() {
 	const navigate = useNavigate();
@@ -153,7 +154,6 @@ function App() {
 					</div>
 				</div>
 			)}
-
 			{/* Center page prompt if user closed the modal on root path */}
 			{isRootPath && !isOpen && (
 				<div className="d-flex justify-content-center align-items-center min-vh-100">

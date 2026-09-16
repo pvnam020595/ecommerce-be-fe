@@ -44,11 +44,22 @@ export const CardItem = ({
 		opacity: isDragging ? 0.5 : 1
 	};
 
-	const hasDetails =
+	const hasLabels = card.labels && card.labels.length > 0;
+	const totalSubtasks = card.subtasks ? card.subtasks.length : (card.checklist ? card.checklist.total : 0);
+	const completedSubtasks = card.subtasks ? card.subtasks.filter(st => st.completed).length : (card.checklist ? card.checklist.completed : 0);
+	const hasChecklist = totalSubtasks > 0;
+	const totalAttachments = (card.attachments ? card.attachments.length : 0) || card.attachmentsCount || 0;
+	const hasAttachments = totalAttachments > 0;
+	const hasComments = Boolean(card.commentsCount && card.commentsCount > 0);
+	const hasDates = Boolean(card.startDate || card.endDate);
+	const hasMembers = Boolean(card.members && card.members.length > 0);
+	const hasBottomRow =
+		hasDates ||
+		hasChecklist ||
 		card.description ||
-		card.startDate ||
-		card.endDate ||
-		(card.members && card.members.length > 0);
+		hasComments ||
+		hasAttachments ||
+		hasMembers;
 
 	return (
 		<>
@@ -57,42 +68,121 @@ export const CardItem = ({
 				style={style}
 				{...attributes}
 				{...listeners}
-				className="card-item bg-white rounded-2 shadow-sm p-2 mb-2 cursor-pointer position-relative group-hover"
+				className="card-item bg-white rounded-3 shadow-sm p-3 mb-2 cursor-pointer position-relative group-hover"
 				onClick={() => setIsModalOpen(true)}
 			>
-				<span className="fs-8">{card.title}</span>
+				{/* Top Labels / Badges */}
+				{hasLabels && (
+					<div className="card-labels-container d-flex flex-wrap gap-1 mb-2">
+						{card.labels!.map(lbl => (
+							<span
+								key={lbl.id}
+								className="badge card-tag-badge fw-medium"
+								style={{
+									backgroundColor: lbl.bg,
+									color: lbl.color,
+									fontSize: '1.1rem',
+									padding: '0.3rem 0.7rem',
+									borderRadius: '0.4rem'
+								}}
+							>
+								{lbl.text}
+							</span>
+						))}
+					</div>
+				)}
 
-				{/* Details Indicators (Members, Dates, etc.) */}
-				{hasDetails && (
-					<div className="d-flex flex-wrap align-items-center gap-2 mt-2">
-						{(card.startDate || card.endDate) && (
-							<div className="badge bg-light text-dark fw-normal border">
-								<i className="bi bi-clock me-1"></i>
-								{card.startDate ? card.startDate.slice(5) : ''}
-								{card.endDate
-									? ` - ${card.endDate.slice(5)}`
-									: ''}
-							</div>
-						)}
-						{card.description && (
-							<i className="bi bi-justify-left text-muted fs-8"></i>
-						)}
-						{card.members && card.members.length > 0 && (
-							<div className="d-flex align-items-center ms-auto">
-								{card.members.map(m => (
+				{/* Card Title */}
+				<div className="card-title-text fw-medium text-dark mb-2">
+					{card.title}
+				</div>
+
+				{/* Card Meta & Bottom Row */}
+				{hasBottomRow && (
+					<div className="card-meta-row d-flex align-items-center justify-content-between gap-2 mt-2 pt-1">
+						{/* Left Indicators */}
+						<div className="d-flex align-items-center flex-wrap gap-2 text-muted fs-8">
+							{/* Due Date Indicator */}
+							{hasDates && (
+								<div className="card-meta-item d-flex align-items-center gap-1 badge bg-light text-secondary border fw-normal py-1 px-2 rounded">
+									<i className="bi bi-clock"></i>
+									<span>
+										{card.startDate ? card.startDate.slice(5) : ''}
+										{card.endDate ? ` - ${card.endDate.slice(5)}` : ''}
+									</span>
+								</div>
+							)}
+
+							{/* Description Indicator */}
+							{card.description && (
+								<div
+									className="card-meta-item d-flex align-items-center"
+									title="This card has a description"
+								>
+									<i className="bi bi-justify-left"></i>
+								</div>
+							)}
+
+							{/* Checklist Indicator */}
+							{hasChecklist && (
+								<div
+									className={`card-meta-item d-flex align-items-center gap-1 ${
+										completedSubtasks === totalSubtasks
+											? 'text-success'
+											: ''
+									}`}
+									title={`Subtasks: ${completedSubtasks}/${totalSubtasks}`}
+								>
+									<i className="bi bi-check2-square"></i>
+									<span>
+										{completedSubtasks}/{totalSubtasks}
+									</span>
+								</div>
+							)}
+
+							{/* Comments Indicator */}
+							{hasComments && (
+								<div
+									className="card-meta-item d-flex align-items-center gap-1"
+									title={`${card.commentsCount} comments`}
+								>
+									<i className="bi bi-chat-left-text"></i>
+									<span>{card.commentsCount}</span>
+								</div>
+							)}
+
+							{/* Attachments Indicator */}
+							{hasAttachments && (
+								<div
+									className="card-meta-item d-flex align-items-center gap-1"
+									title={`${totalAttachments} attachments`}
+								>
+									<i className="bi bi-paperclip"></i>
+									<span>{totalAttachments}</span>
+								</div>
+							)}
+						</div>
+
+						{/* Right Assigned Members Avatars */}
+						{hasMembers && (
+							<div className="card-members-stack d-flex align-items-center ms-auto">
+								{card.members!.map((m, idx) => (
 									<div
 										key={m.id}
-										className="avatar-circle ms-n1 border border-white rounded-circle"
+										className="card-member-avatar rounded-circle border border-2 border-white overflow-hidden shadow-xs"
 										title={m.name}
 										style={{
-											width: '20px',
-											height: '20px'
+											width: '2.4rem',
+											height: '2.4rem',
+											marginLeft: idx > 0 ? '-0.6rem' : 0,
+											zIndex: 5 - idx
 										}}
 									>
 										<img
 											src={m.avatar}
 											alt={m.name}
-											className="w-100 h-100 rounded-circle"
+											className="w-100 h-100"
+											style={{ objectFit: 'cover' }}
 										/>
 									</div>
 								))}
@@ -101,10 +191,12 @@ export const CardItem = ({
 					</div>
 				)}
 
-				{/* Hover Actions */}
-				<div className="position-absolute top-0 end-0 p-1 opacity-0 group-hover-opacity-100 d-flex gap-1 bg-white rounded">
+				{/* Quick Delete / Edit Action on Hover */}
+				<div className="card-hover-actions position-absolute top-0 end-0 p-1 opacity-0 group-hover-opacity-100 d-flex gap-1">
 					<button
-						className="btn btn-sm text-danger p-0 border-0"
+						className="btn btn-sm btn-light p-1 rounded-circle border-0 text-danger shadow-xs d-flex align-items-center justify-content-center"
+						style={{ width: '2.4rem', height: '2.4rem' }}
+						title="Delete card"
 						onClick={e => {
 							e.stopPropagation();
 							onDelete(card.id);

@@ -23,73 +23,109 @@ body {
 }
 
 .trello-navbar {
-  height: 4.8rem;
+  height: 5.6rem;
   background-color: #ffffff;
-  border-bottom: 0.1rem solid rgba(9, 30, 66, 0.1411764706);
-  padding: 0 1.6rem;
+  border-bottom: 0.1rem solid #e2e8f0;
+  padding: 0 2.4rem;
 }
-.trello-navbar .trello-logo-icon {
-  color: #0c66e4;
-  font-size: 3rem;
+.trello-navbar .plannr-logo-icon {
+  width: 2.8rem;
+  height: 2.8rem;
+  flex-shrink: 0;
 }
-.trello-navbar .logo-text {
-  font-family: "Charlie Display", sans-serif;
-  letter-spacing: -0.05rem;
-  font-size: 2.4rem;
+.trello-navbar .plannr-logo-text {
+  font-size: 1.8rem;
   font-weight: 700;
-  color: #44546f;
+  color: #172b4d;
+  line-height: 2.2rem;
+  letter-spacing: -0.02rem;
+}
+.trello-navbar .plannr-nav-divider {
+  width: 0.1rem;
+  height: 1.6rem;
+  background-color: #e2e8f0;
+  margin: 0 0.8rem;
 }
 .trello-navbar .nav-link {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: #44546f;
   padding: 0.6rem 1.2rem;
+  transition: all 0.15s ease;
 }
 .trello-navbar .nav-link:hover {
-  background-color: rgba(9, 30, 66, 0.1411764706);
+  background-color: #f1f3f5;
+  color: #172b4d;
 }
-.trello-navbar .create-btn {
-  background-color: #0c66e4;
-  border: none;
-  font-size: 1.5rem;
+.trello-navbar .nav-link.nav-link-active {
+  background-color: #eef2ff;
+  color: #4f46e5;
+  font-weight: 600;
 }
-.trello-navbar .create-btn:hover {
-  background-color: #0055cc;
+.trello-navbar .nav-link.nav-link-active:hover {
+  background-color: #e0e7ff;
+  color: #4338ca;
 }
-.trello-navbar .search-bar {
-  width: 40rem;
-  border: 0.1rem solid rgba(9, 30, 66, 0.1411764706);
+.trello-navbar .search-box {
+  width: 24rem;
+  height: 3.6rem;
+  background-color: #f1f3f5;
+  border: 0.1rem solid #e2e8f0;
+  border-radius: 1.8rem;
+  padding: 0 1.2rem;
+  cursor: text;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.trello-navbar .search-box:hover {
+  background-color: #e9ecef;
+  border-color: #cbd5e1;
+}
+.trello-navbar .search-box .search-placeholder {
+  font-size: 1.3rem;
+  color: #626f86;
+  user-select: none;
+  flex: 1;
+}
+.trello-navbar .search-box .search-shortcut {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6rem;
+  height: 1.6rem;
+  padding: 0 0.3rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #626f86;
   background-color: #ffffff;
-  transition: width 0.2s ease;
-  height: 3.2rem;
+  border-radius: 0.4rem;
+  box-shadow: 0 0.1rem 0.2rem rgba(0, 0, 0, 0.05);
+  line-height: 1;
 }
-.trello-navbar .search-bar input {
-  font-size: 1.5rem;
-}
-.trello-navbar .search-bar input:focus {
-  box-shadow: none;
-}
-.trello-navbar .search-bar:focus-within {
-  width: 70rem;
-  border-color: #388bff;
-  box-shadow: 0 0 0 0.2rem #e9f2ff;
-}
-.trello-navbar .search-bar .bi-search {
-  font-size: 1.8rem;
+.trello-navbar .search-box .search-icon {
+  color: #44546f;
 }
 .trello-navbar .btn-icon {
-  width: 3.2rem;
-  height: 3.2rem;
+  width: 3.4rem;
+  height: 3.4rem;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #44546f;
-  font-size: 1.8rem;
+  border: none;
+  background: transparent;
+  transition: background-color 0.15s ease;
 }
 .trello-navbar .btn-icon:hover {
-  background-color: rgba(9, 30, 66, 0.1411764706);
+  background-color: #f1f3f5;
+  color: #172b4d;
 }
 .trello-navbar .avatar-circle {
-  width: 2.8rem;
-  height: 2.8rem;
+  width: 3.2rem;
+  height: 3.2rem;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -97,7 +133,7 @@ body {
   transition: opacity 0.2s;
 }
 .trello-navbar .avatar-circle:hover {
-  opacity: 0.8;
+  opacity: 0.85;
 }
 .trello-navbar .trello-profile-dropdown {
   width: 32rem;

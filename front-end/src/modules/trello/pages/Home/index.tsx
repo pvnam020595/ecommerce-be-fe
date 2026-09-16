@@ -1,261 +1,9 @@
 import '@css/trello/home.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import React, { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { PATHS } from '@router/paths';
-import type { RootState } from '@redux/store';
-
-const Navbar = () => {
-	const dispatch = useDispatch();
-	const navigate = useNavigate();
-	const user = useSelector((state: RootState) => state.auth.user);
-
-	const userName = user?.name || 'Nam Pham Van';
-	const userEmail = user?.email || 'p_vannam@thk-hd.vn';
-	const userAvatar =
-		user?.avatar || 'https://avatars.githubusercontent.com/u/1?v=4';
-
-	const handleLogout = (e: React.MouseEvent) => {
-		e.preventDefault();
-		dispatch({ type: 'LOGOUT' });
-		navigate(PATHS.TRELLO.ROOT, { replace: true });
-	};
-
-	return (
-		<nav className="navbar navbar-expand-md trello-navbar px-3 border-bottom">
-			<div className="d-flex align-items-center justify-content-between w-100">
-				<div className="d-flex align-items-center">
-					<a
-						className="navbar-brand d-flex align-items-center me-3"
-						href="#!"
-					>
-						<div className="trello-logo-icon me-1">
-							<i className="bi bi-trello"></i>
-						</div>
-						<span className="fw-bold text-dark logo-text">
-							Trello
-						</span>
-					</a>
-				</div>
-
-				<div className="collapse navbar-collapse d-none d-md-flex">
-					<ul className="navbar-nav me-auto gap-1 fw-semibold">
-						<li className="nav-item">
-							<a
-								className="nav-link text-dark rounded px-2"
-								href="#!"
-							>
-								Workspaces{' '}
-								<i className="bi bi-chevron-down fs-8"></i>
-							</a>
-						</li>
-						<li className="nav-item">
-							<a
-								className="nav-link text-dark rounded px-2"
-								href="#!"
-							>
-								Recent{' '}
-								<i className="bi bi-chevron-down fs-8"></i>
-							</a>
-						</li>
-						<li className="nav-item">
-							<a
-								className="nav-link text-dark rounded px-2"
-								href="#!"
-							>
-								Starred{' '}
-								<i className="bi bi-chevron-down fs-8"></i>
-							</a>
-						</li>
-						<li className="nav-item">
-							<a
-								className="nav-link text-dark rounded px-2"
-								href="#!"
-							>
-								Templates{' '}
-								<i className="bi bi-chevron-down fs-8"></i>
-							</a>
-						</li>
-						<li className="nav-item ms-2 align-self-center">
-							<button className="btn btn-primary btn-sm fw-bold px-3 create-btn">
-								Create
-							</button>
-						</li>
-					</ul>
-				</div>
-
-				{/* Right Actions (Search, Noti, Avatar) */}
-				<div className="d-flex align-items-center gap-2">
-					<div className="input-group search-bar d-none d-sm-flex align-items-center rounded">
-						<i className="bi bi-search ms-2 text-muted"></i>
-						<input
-							type="text"
-							className="form-control border-0 bg-transparent shadow-none"
-							placeholder="Search"
-						/>
-					</div>
-					<button className="btn btn-sm btn-icon rounded-circle">
-						<i className="bi bi-bell"></i>
-					</button>
-					<button className="btn btn-sm btn-icon rounded-circle">
-						<i className="bi bi-question-circle"></i>
-					</button>
-
-					{/* Profile Dropdown */}
-					<div className="dropdown ms-1">
-						<div
-							className="avatar-circle cursor-pointer"
-							data-bs-toggle="dropdown"
-							aria-expanded="false"
-							style={{
-								border: '0.2rem solid #1d7afc',
-								padding: '0.2rem'
-							}}
-						>
-							<img
-								src={userAvatar}
-								alt={userName}
-								className="w-100 h-100 rounded-circle shadow-sm"
-								style={{ objectFit: 'cover' }}
-							/>
-						</div>
-
-						<ul className="dropdown-menu dropdown-menu-end trello-profile-dropdown shadow-sm mt-2">
-							<li className="dropdown-header">Account</li>
-							<li>
-								<div className="d-flex align-items-center px-3 py-2 mb-1">
-									<div className="avatar-circle-lg me-3">
-										<img
-											src={userAvatar}
-											alt={userName}
-											className="w-100 h-100 rounded-circle"
-										/>
-									</div>
-									<div className="user-info">
-										<div className="fw-bold fs-6">
-											{userName}
-										</div>
-										<div className="text-muted fs-8">
-											{userEmail}
-										</div>
-									</div>
-								</div>
-							</li>
-							<li>
-								<a className="dropdown-item" href="#!">
-									Switch accounts
-								</a>
-							</li>
-							<li>
-								<a
-									className="dropdown-item d-flex justify-content-between align-items-center"
-									href="#!"
-								>
-									Manage account{' '}
-									<i className="bi bi-box-arrow-up-right fs-8 text-muted"></i>
-								</a>
-							</li>
-
-							<li>
-								<hr className="dropdown-divider" />
-							</li>
-
-							<li className="dropdown-header">Trello</li>
-							<li>
-								<a className="dropdown-item" href="#!">
-									Profile and visibility
-								</a>
-							</li>
-							<li>
-								<a className="dropdown-item" href="#!">
-									Activity
-								</a>
-							</li>
-							<li>
-								<a className="dropdown-item" href="#!">
-									Cards
-								</a>
-							</li>
-							<li>
-								<a className="dropdown-item" href="#!">
-									Settings
-								</a>
-							</li>
-							<li>
-								<a
-									className="dropdown-item d-flex justify-content-between align-items-center"
-									href="#!"
-								>
-									Labs
-									<span
-										className="badge text-dark fs-8 px-2 py-1"
-										style={{ backgroundColor: '#f5cd47' }}
-									>
-										<i className="bi bi-stars me-1"></i>Labs
-									</span>
-								</a>
-							</li>
-							<li>
-								<a
-									className="dropdown-item d-flex justify-content-between align-items-center"
-									href="#!"
-								>
-									<span>
-										<i className="bi bi-circle-half me-2"></i>{' '}
-										Theme
-									</span>
-									<i className="bi bi-chevron-right fs-8 text-muted"></i>
-								</a>
-							</li>
-
-							<li>
-								<hr className="dropdown-divider" />
-							</li>
-
-							<li>
-								<a className="dropdown-item" href="#!">
-									<i className="bi bi-people me-2 fs-6"></i>{' '}
-									Create Workspace
-								</a>
-							</li>
-
-							<li>
-								<hr className="dropdown-divider" />
-							</li>
-
-							<li>
-								<a className="dropdown-item" href="#!">
-									Help
-								</a>
-							</li>
-							<li>
-								<a className="dropdown-item" href="#!">
-									Shortcuts
-								</a>
-							</li>
-
-							<li>
-								<hr className="dropdown-divider" />
-							</li>
-
-							<li>
-								<button
-									type="button"
-									className="dropdown-item text-danger d-flex align-items-center gap-2 border-0 bg-transparent w-100 text-start"
-									onClick={handleLogout}
-								>
-									<i className="bi bi-box-arrow-right"></i>{' '}
-									Log out
-								</button>
-							</li>
-						</ul>
-					</div>
-				</div>
-			</div>
-		</nav>
-	);
-};
+import { Navbar } from '@modules/trello/components/Navbar';
 
 const Sidebar = () => (
 	<aside className="trello-sidebar pt-4 px-3 d-none d-md-block">
@@ -336,8 +84,8 @@ const BoardCard = ({
 
 	return (
 		<div className="col board-col">
-			<a
-				href={linkTo}
+			<Link
+				to={linkTo}
 				className="board-tile rounded text-decoration-none d-block position-relative"
 				style={style}
 			>
@@ -351,7 +99,7 @@ const BoardCard = ({
 						onClick={toggleStar}
 					></i>
 				</div>
-			</a>
+			</Link>
 		</div>
 	);
 };
@@ -397,16 +145,19 @@ export const Home = () => {
 									title="E-commerce Project"
 									bgType="color"
 									bgValue="#0079bf"
+									linkTo={PATHS.TRELLO.BOARDS}
 								/>
 								<BoardCard
 									title="Marketing Campaign"
 									bgType="image"
 									bgValue="https://images.unsplash.com/photo-1707343843437-caacff5cfa74?q=80&w=400&auto=format&fit=crop"
+									linkTo={PATHS.TRELLO.BOARDS}
 								/>
 								<BoardCard
 									title="Q3 Roadmap"
 									bgType="color"
 									bgValue="#d29034"
+									linkTo={PATHS.TRELLO.BOARDS}
 								/>
 
 								<div className="col board-col">

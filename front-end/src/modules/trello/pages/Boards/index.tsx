@@ -17,7 +17,7 @@ import {
 	SortableContext,
 	horizontalListSortingStrategy
 } from '@dnd-kit/sortable';
-import { TrelloRootState } from '../../redux/store';
+import type { RootState } from '@redux/store';
 import { Card, Column } from '../../interfaces/BoardInterface';
 import {
 	moveCard,
@@ -30,12 +30,14 @@ import {
 	moveColumn
 } from '../../redux/actions/boardActions';
 import { ColumnContainer } from './components/ColumnContainer';
+import { Navbar } from '@modules/trello/components/Navbar';
 import '@css/trello/board.css';
+import '@css/trello/home.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 export const Boards = () => {
 	const dispatch = useDispatch();
-	const board = useSelector((state: TrelloRootState) => state.board);
+	const board = useSelector((state: RootState) => state.board);
 	const [activeCard, setActiveCard] = useState<Card | null>(null);
 	const [activeColumn, setActiveColumn] = useState<Column | null>(null);
 	const [isAddingColumn, setIsAddingColumn] = useState(false);
@@ -98,33 +100,34 @@ export const Boards = () => {
 		const overId = over.id as string;
 
 		const sourceColumn = findColumnByCardId(activeId);
-		let destColumn: Column | undefined;
+		const targetColumn =
+			findColumnByCardId(overId) ||
+			board.columns.find(col => col.id === overId);
 
-		// Check if over a column droppable
-		if (overId.startsWith('column-')) {
-			const colId = overId.replace('column-', '');
-			destColumn = board.columns.find(c => c.id === colId);
-		} else {
-			destColumn = findColumnByCardId(overId);
+		if (!sourceColumn || !targetColumn) return;
+
+		// Move to another column
+		if (sourceColumn.id !== targetColumn.id) {
+			const activeCardItem = sourceColumn.cards.find(
+				c => c.id === activeId
+			);
+			if (!activeCardItem) return;
+
+			const overIndex = targetColumn.cards.findIndex(
+				c => c.id === overId
+			);
+			const newIndex =
+				overIndex >= 0 ? overIndex : targetColumn.cards.length;
+
+			dispatch(
+				moveCard(
+					activeCardItem,
+					sourceColumn.id,
+					targetColumn.id,
+					newIndex
+				)
+			);
 		}
-
-		if (!sourceColumn || !destColumn || sourceColumn.id === destColumn.id)
-			return;
-
-		const draggedCard = sourceColumn.cards.find(c => c.id === activeId);
-		if (!draggedCard) return;
-
-		let newIndex = destColumn.cards.length;
-		if (!overId.startsWith('column-')) {
-			const overIndex = destColumn.cards.findIndex(c => c.id === overId);
-			if (overIndex >= 0) {
-				newIndex = overIndex;
-			}
-		}
-
-		dispatch(
-			moveCard(draggedCard, sourceColumn.id, destColumn.id, newIndex)
-		);
 	};
 
 	const handleDragEnd = (event: DragEndEvent) => {
@@ -137,56 +140,34 @@ export const Boards = () => {
 		const activeId = active.id as string;
 		const overId = over.id as string;
 
-		if (activeId === overId) return;
-
 		// Column reordering
 		if (active.data.current?.type === 'column') {
-			let overColId = overId;
-			// Resolve the target column id
-			if (overColId.startsWith('column-')) {
-				overColId = overColId.replace('column-', '');
-			} else if (!board.columns.some(col => col.id === overColId)) {
-				// Dropped over a card — find which column it belongs to
-				const colWithCard = findColumnByCardId(overColId);
-				if (colWithCard) {
-					overColId = colWithCard.id;
-				}
-			}
-
-			if (activeId !== overColId) {
-				const sourceIndex = board.columns.findIndex(
+			if (activeId !== overId) {
+				const oldIndex = board.columns.findIndex(
 					col => col.id === activeId
 				);
-				const destinationIndex = board.columns.findIndex(
-					col => col.id === overColId
+				const newIndex = board.columns.findIndex(
+					col => col.id === overId
 				);
-
-				if (
-					sourceIndex !== -1 &&
-					destinationIndex !== -1 &&
-					sourceIndex !== destinationIndex
-				) {
-					dispatch(moveColumn(sourceIndex, destinationIndex));
+				if (oldIndex !== -1 && newIndex !== -1) {
+					dispatch(moveColumn(oldIndex, newIndex));
 				}
 			}
 			return;
 		}
 
-		// Card reordering within same column
+		// Card reordering inside the same column
 		const sourceColumn = findColumnByCardId(activeId);
-		if (!sourceColumn) return;
+		const targetColumn = findColumnByCardId(overId);
 
-		const overIndex = sourceColumn.cards.findIndex(c => c.id === overId);
-		if (overIndex >= 0) {
-			const draggedCard = sourceColumn.cards.find(c => c.id === activeId);
-			if (draggedCard) {
+		if (sourceColumn && targetColumn && sourceColumn.id === targetColumn.id) {
+			const oldIndex = sourceColumn.cards.findIndex(c => c.id === activeId);
+			const newIndex = sourceColumn.cards.findIndex(c => c.id === overId);
+
+			if (oldIndex !== newIndex && oldIndex !== -1 && newIndex !== -1) {
+				const card = sourceColumn.cards[oldIndex];
 				dispatch(
-					moveCard(
-						draggedCard,
-						sourceColumn.id,
-						sourceColumn.id,
-						overIndex
-					)
+					moveCard(card, sourceColumn.id, sourceColumn.id, newIndex)
 				);
 			}
 		}
@@ -260,16 +241,77 @@ export const Boards = () => {
 	);
 
 	return (
-		<div className="board-container">
+		<div className="trello-board-wrapper vh-100 d-flex flex-column overflow-hidden">
+			<Navbar />
+			<div className="board-container flex-grow-1 d-flex flex-column overflow-hidden">
 			{/* Board Header */}
-			<div className="board-header d-flex align-items-center px-3 py-2">
-				<h5 className="fw-bold text-white m-0 me-3">{board.title}</h5>
-				<div className="d-flex align-items-center gap-2">
-					<button className="btn btn-sm btn-board-action">
+			<div className="board-header d-flex flex-wrap align-items-center justify-content-between px-3 px-md-4 py-2 gap-2">
+				{/* Left Header: Title, Star, Divider, Visibility, Divider, Members */}
+				<div className="d-flex align-items-center flex-wrap gap-2 gap-md-3">
+					<h2 className="board-header-title m-0">
+						{board.title || 'Acme Mobile App Redesign'}
+					</h2>
+
+					<button
+						className="btn btn-board-star p-0 d-flex align-items-center justify-content-center"
+						type="button"
+						aria-label="Star board"
+					>
 						<i className="bi bi-star"></i>
 					</button>
-					<button className="btn btn-sm btn-board-action">
-						<i className="bi bi-people"></i> Members
+
+					<div className="board-header-divider d-none d-sm-block"></div>
+
+					<button className="btn btn-board-visibility d-flex align-items-center gap-2" type="button">
+						<i className="bi bi-lock"></i>
+						<span className="d-none d-sm-inline">Workspace Visible</span>
+					</button>
+
+					<div className="board-header-divider d-none d-md-block"></div>
+
+					{/* Members Stack */}
+					<div className="board-header-members d-flex align-items-center">
+						<img
+							src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100&auto=format&fit=crop"
+							alt="Member 1"
+							className="member-avatar"
+						/>
+						<img
+							src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&auto=format&fit=crop"
+							alt="Member 2"
+							className="member-avatar"
+						/>
+						<div className="member-avatar member-avatar-initials bg-emerald">
+							DC
+						</div>
+						<div className="member-avatar member-avatar-initials bg-pink">
+							ML
+						</div>
+						<button
+							className="member-avatar member-add-btn d-flex align-items-center justify-content-center"
+							type="button"
+							aria-label="Add member"
+						>
+							<i className="bi bi-plus-lg"></i>
+						</button>
+					</div>
+				</div>
+
+				{/* Right Header: Filter, Sort, Automations */}
+				<div className="d-flex align-items-center gap-1 gap-md-2 ms-auto ms-md-0">
+					<button className="btn btn-board-action-btn d-flex align-items-center gap-1 gap-md-2" type="button" title="Filter Cards">
+						<i className="bi bi-funnel"></i>
+						<span className="d-none d-md-inline">Filter Cards</span>
+					</button>
+
+					<button className="btn btn-board-action-btn d-flex align-items-center gap-1 gap-md-2" type="button" title="Sort By">
+						<i className="bi bi-sort-down"></i>
+						<span className="d-none d-md-inline">Sort By</span>
+					</button>
+
+					<button className="btn btn-board-action-btn d-flex align-items-center gap-1 gap-md-2" type="button" title="Automations">
+						<i className="bi bi-lightning-charge"></i>
+						<span className="d-none d-md-inline">Automations</span>
 					</button>
 				</div>
 			</div>
@@ -384,6 +426,7 @@ export const Boards = () => {
 						</button>
 					)}
 				</div>
+			</div>
 			</div>
 		</div>
 	);

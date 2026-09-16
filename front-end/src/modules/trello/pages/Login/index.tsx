@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import Button from '@modules/trello/components/Button';
 import { PATHS } from '@router/paths';
 import { authenticateUser } from '@mock/api/auth/mockUser';
+import { loginSuccess } from '@/redux/common/authActions';
 
 export const Login = () => {
 	const [email, setEmail] = useState('p_vannam@thk-hd.vn');
@@ -30,15 +31,14 @@ export const Login = () => {
 			return;
 		}
 
-		dispatch({
-			type: 'LOGIN',
-			payload: {
+		dispatch(
+			loginSuccess({
 				id: user.id,
 				name: user.name,
 				email: user.email,
 				avatar: user.avatar
-			}
-		});
+			})
+		);
 
 		navigate(PATHS.TRELLO.HOME, { replace: true });
 	};
