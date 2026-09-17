@@ -1,5 +1,16 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Card, Member, Column, SubTask, Attachment } from '../../../interfaces/BoardInterface';
+import { useDispatch } from 'react-redux';
+import {
+	Card,
+	Member,
+	Column,
+	SubTask,
+	Attachment,
+	CardComment,
+	CardCommentReply,
+	CardActivity
+} from '../../../interfaces/BoardInterface';
+import { addCard } from '../../../redux/actions/boardActions';
 
 // ==========================================
 // Types & Constants
@@ -13,6 +24,7 @@ export interface CardDetailModalProps {
 	onClose: () => void;
 	onSave: (updates: Partial<Card>) => void;
 	onMoveCard?: (card: Card, targetColumnId: string) => void;
+	onConvertSubtaskToCard?: (subtask: SubTask) => void;
 }
 
 interface CardFormData {
@@ -23,6 +35,8 @@ interface CardFormData {
 	members: Member[];
 	subtasks: SubTask[];
 	attachments: Attachment[];
+	comments: CardComment[];
+	activities: CardActivity[];
 }
 
 const MOCK_MEMBERS: readonly Member[] = [
@@ -48,6 +62,37 @@ const MOCK_MEMBERS: readonly Member[] = [
 	}
 ];
 
+const formatDateDisplay = (dateStr?: string): string => {
+	if (!dateStr) return '';
+	try {
+		const parts = dateStr.split('-');
+		if (parts.length === 3) {
+			const months = [
+				'Jan',
+				'Feb',
+				'Mar',
+				'Apr',
+				'May',
+				'Jun',
+				'Jul',
+				'Aug',
+				'Sep',
+				'Oct',
+				'Nov',
+				'Dec'
+			];
+			const monthIdx = parseInt(parts[1], 10) - 1;
+			const day = parseInt(parts[2], 10);
+			if (monthIdx >= 0 && monthIdx < 12) {
+				return `${months[monthIdx]} ${day}`;
+			}
+		}
+	} catch (err) {
+		void err;
+	}
+	return dateStr.slice(5);
+};
+
 // ==========================================
 // Custom Hook: useCardForm
 // ==========================================
@@ -60,7 +105,9 @@ const useCardForm = (card: Card, isOpen: boolean) => {
 		endDate: card.endDate || '',
 		members: card.members || [],
 		subtasks: card.subtasks || [],
-		attachments: card.attachments || []
+		attachments: card.attachments || [],
+		comments: card.comments || [],
+		activities: card.activities || []
 	}));
 
 	useEffect(() => {
@@ -72,7 +119,9 @@ const useCardForm = (card: Card, isOpen: boolean) => {
 				endDate: card.endDate || '',
 				members: card.members || [],
 				subtasks: card.subtasks || [],
-				attachments: card.attachments || []
+				attachments: card.attachments || [],
+				comments: card.comments || [],
+				activities: card.activities || []
 			});
 		}
 	}, [isOpen, card]);
@@ -82,6 +131,94 @@ const useCardForm = (card: Card, isOpen: boolean) => {
 			setFormData(prev => ({ ...prev, [key]: value }));
 		},
 		[]
+	);
+
+	const logActivity = useCallback(
+		(type: CardActivity['type'], text: string) => {
+			const now = new Date();
+			const timeStr = now.toLocaleTimeString('en-US', {
+				hour: '2-digit',
+				minute: '2-digit'
+			});
+			const dateStr = now.toLocaleDateString('en-US', {
+				month: 'short',
+				day: 'numeric'
+			});
+			const newActivity: CardActivity = {
+				id: `act-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+				type,
+				user: MOCK_MEMBERS[0],
+				text,
+				timestamp: `${dateStr}, ${timeStr}`
+			};
+			setFormData(prev => ({
+				...prev,
+				activities: [newActivity, ...(prev.activities || [])]
+			}));
+		},
+		[]
+	);
+
+	const addComment = useCallback(
+		(content: string) => {
+			if (!content.trim()) return;
+			const now = new Date();
+			const timeStr = now.toLocaleTimeString('en-US', {
+				hour: '2-digit',
+				minute: '2-digit'
+			});
+			const dateStr = now.toLocaleDateString('en-US', {
+				month: 'short',
+				day: 'numeric'
+			});
+			const newComment: CardComment = {
+				id: `com-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+				author: MOCK_MEMBERS[0],
+				content: content.trim(),
+				createdAt: `${dateStr}, ${timeStr}`,
+				replies: []
+			};
+			setFormData(prev => ({
+				...prev,
+				comments: [newComment, ...(prev.comments || [])]
+			}));
+			logActivity('comment', 'added a comment');
+		},
+		[logActivity]
+	);
+
+	const replyComment = useCallback(
+		(commentId: string, content: string) => {
+			if (!content.trim()) return;
+			const now = new Date();
+			const timeStr = now.toLocaleTimeString('en-US', {
+				hour: '2-digit',
+				minute: '2-digit'
+			});
+			const dateStr = now.toLocaleDateString('en-US', {
+				month: 'short',
+				day: 'numeric'
+			});
+			const newReply: CardCommentReply = {
+				id: `rep-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+				author: MOCK_MEMBERS[0],
+				content: content.trim(),
+				createdAt: `${dateStr}, ${timeStr}`
+			};
+			setFormData(prev => ({
+				...prev,
+				comments: (prev.comments || []).map(com =>
+					com.id === commentId
+						? {
+							...com,
+							replies: [...(com.replies || []), newReply]
+						}
+						: com
+				)
+			}));
+			logActivity('comment', 'replied to a comment');
+		},
+		[logActivity]
 	);
 
 	const toggleMember = useCallback((member: Member) => {
@@ -94,7 +231,14 @@ const useCardForm = (card: Card, isOpen: boolean) => {
 		});
 	}, []);
 
-	return { formData, updateField, toggleMember };
+	return {
+		formData,
+		updateField,
+		toggleMember,
+		logActivity,
+		addComment,
+		replyComment
+	};
 };
 
 // ==========================================
@@ -183,7 +327,27 @@ const StatusDropdownMenu: React.FC<StatusDropdownMenuProps> = ({
 	onSelectColumn
 }) => {
 	const [isOpen, setIsOpen] = useState(false);
+	const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(
+		null
+	);
 	const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+	const handleToggle = () => {
+		if (!isOpen && dropdownRef.current) {
+			const rect = dropdownRef.current.getBoundingClientRect();
+			const menuHeight = 220;
+			const menuWidth = 240;
+			const spaceBelow = window.innerHeight - rect.bottom;
+			const openUp = spaceBelow < menuHeight && rect.top > menuHeight;
+			const top = openUp ? rect.top - menuHeight - 4 : rect.bottom + 4;
+			const left = Math.min(
+				window.innerWidth - menuWidth - 10,
+				Math.max(10, rect.left)
+			);
+			setMenuPos({ top, left });
+		}
+		setIsOpen(prev => !prev);
+	};
 
 	useEffect(() => {
 		const handleClickOutside = (e: MouseEvent) => {
@@ -194,11 +358,16 @@ const StatusDropdownMenu: React.FC<StatusDropdownMenuProps> = ({
 				setIsOpen(false);
 			}
 		};
+		const handleScroll = () => {
+			if (isOpen) setIsOpen(false);
+		};
 		if (isOpen) {
 			document.addEventListener('mousedown', handleClickOutside);
+			window.addEventListener('scroll', handleScroll, true);
 		}
 		return () => {
 			document.removeEventListener('mousedown', handleClickOutside);
+			window.removeEventListener('scroll', handleScroll, true);
 		};
 	}, [isOpen]);
 
@@ -208,46 +377,74 @@ const StatusDropdownMenu: React.FC<StatusDropdownMenuProps> = ({
 		<div className="dropdown position-relative" ref={dropdownRef}>
 			<button
 				type="button"
-				className="btn btn-sm btn-light border-0 p-1 rounded d-flex align-items-center justify-content-center text-muted"
-				style={{ width: '28px', height: '28px' }}
-				onClick={() => setIsOpen(prev => !prev)}
+				className={`btn btn-sm ${
+					isOpen ? 'btn-secondary bg-secondary-subtle' : 'btn-light'
+				} border-0 p-1 rounded-circle d-flex align-items-center justify-content-center text-muted`}
+				style={{
+					width: '32px',
+					height: '32px',
+					transition: 'all 0.15s ease'
+				}}
+				onClick={handleToggle}
 				title="Card options & status"
 				aria-expanded={isOpen}
 			>
-				<i className="bi bi-three-dots fs-6"></i>
+				<i className="bi bi-three-dots-vertical fs-6"></i>
 			</button>
 
-			{isOpen && (
+			{isOpen && menuPos && (
 				<div
-					className="dropdown-menu show shadow border-0 py-2"
+					className="dropdown-menu show shadow-lg border-0 py-2 position-fixed"
 					style={{
-						position: 'absolute',
-						top: '100%',
-						left: 0,
-						zIndex: 1061,
-						minWidth: '220px'
+						top: `${menuPos.top}px`,
+						left: `${menuPos.left}px`,
+						zIndex: 1075,
+						minWidth: '240px',
+						borderRadius: '12px',
+						boxShadow:
+							'0 12px 30px rgba(15, 23, 42, 0.15), 0 2px 8px rgba(15, 23, 42, 0.08)'
 					}}
 				>
-					<h6 className="dropdown-header text-uppercase fs-8 fw-bold">
-						Change Status / List
-					</h6>
+					<div className="px-3 py-1 border-bottom mb-1">
+						<span
+							className="text-uppercase text-muted fw-bold"
+							style={{
+								fontSize: '0.7rem',
+								letterSpacing: '0.5px'
+							}}
+						>
+							Change Status / List
+						</span>
+					</div>
 					{columns.map(col => {
 						const isSelected = col.id === currentColumnId;
 						return (
 							<button
 								key={col.id}
 								type="button"
-								className={`dropdown-item d-flex align-items-center justify-content-between py-2 fs-7 ${
-									isSelected ? 'active fw-semibold' : ''
+								className={`dropdown-item d-flex align-items-center justify-content-between px-3 py-2 fs-7 rounded-2 mx-1 ${
+									isSelected
+										? 'bg-primary-subtle text-primary fw-semibold'
+										: 'text-dark'
 								}`}
+								style={{ width: 'calc(100% - 8px)' }}
 								onClick={() => {
 									setIsOpen(false);
 									onSelectColumn(col.id);
 								}}
 							>
-								<span>{col.title}</span>
+								<span className="d-flex align-items-center gap-2">
+									<i
+										className={`bi ${
+											isSelected
+												? 'bi-kanban-fill text-primary'
+												: 'bi-kanban text-muted'
+										}`}
+									></i>
+									<span>{col.title}</span>
+								</span>
 								{isSelected && (
-									<i className="bi bi-check-lg ms-2"></i>
+									<i className="bi bi-check2-circle text-primary fs-6"></i>
 								)}
 							</button>
 						);
@@ -378,7 +575,12 @@ const DatesSection: React.FC<DatesSectionProps> = ({
 						title="Start Date"
 					/>
 				</div>
-				<span className="text-muted">-</span>
+				<span className="text-muted d-flex align-items-center px-1">
+					<i
+						className="bi bi-arrow-right-short fs-5 text-primary align-middle"
+						style={{ lineHeight: 1 }}
+					></i>
+				</span>
 				<div className="input-group input-group-sm h-100">
 					<span className="input-group-text bg-light text-muted border-end-0 px-2 py-0">
 						<i className="bi bi-calendar-check fs-8"></i>
@@ -448,17 +650,856 @@ const RichDescriptionEditor: React.FC<RichDescriptionEditorProps> = ({
 					</button>
 				</div>
 				<div
-					className="form-control rounded-bottom rounded-top-0 border shadow-none"
+					className="form-control rounded-bottom rounded-top-0 border shadow-none w-100"
 					contentEditable
-					style={{ minHeight: '100px', backgroundColor: '#f7f8f9' }}
+					style={{
+						minHeight: '130px',
+						backgroundColor: '#f7f8f9',
+						width: '100%',
+						wordBreak: 'break-word',
+						overflowWrap: 'anywhere'
+					}}
 					onBlur={e => onDescriptionChange(e.currentTarget.innerHTML)}
 					dangerouslySetInnerHTML={{ __html: description }}
 				></div>
-				<div className="form-text fs-8 mt-1 text-muted">
-					Note: Real project should install react-quill or
-					ckeditor-react.
-				</div>
 			</div>
+		</div>
+	);
+};
+
+// ==========================================
+// Subcomponent: SubtaskOptionsMenu
+// ==========================================
+
+interface SubtaskOptionsMenuProps {
+	subtask: SubTask;
+	onDelete: (id: string) => void;
+	onConvertToCard: (subtask: SubTask) => void;
+	onEditTitle?: () => void;
+}
+
+const SubtaskOptionsMenu: React.FC<SubtaskOptionsMenuProps> = ({
+	subtask,
+	onDelete,
+	onConvertToCard,
+	onEditTitle
+}) => {
+	const [isOpen, setIsOpen] = useState(false);
+	const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(
+		null
+	);
+	const menuRef = useRef<HTMLDivElement | null>(null);
+
+	const handleToggle = () => {
+		if (!isOpen && menuRef.current) {
+			const rect = menuRef.current.getBoundingClientRect();
+			const menuHeight = 175;
+			const menuWidth = 200;
+			const spaceBelow = window.innerHeight - rect.bottom;
+			const openUp = spaceBelow < menuHeight && rect.top > menuHeight;
+			const top = openUp ? rect.top - menuHeight - 4 : rect.bottom + 4;
+			const left = Math.max(10, rect.right - menuWidth);
+			setMenuPos({ top, left });
+		}
+		setIsOpen(prev => !prev);
+	};
+
+	useEffect(() => {
+		const handleClickOutside = (e: MouseEvent) => {
+			if (
+				menuRef.current &&
+				!menuRef.current.contains(e.target as Node)
+			) {
+				setIsOpen(false);
+			}
+		};
+		const handleScroll = () => {
+			if (isOpen) setIsOpen(false);
+		};
+		if (isOpen) {
+			document.addEventListener('mousedown', handleClickOutside);
+			window.addEventListener('scroll', handleScroll, true);
+		}
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside);
+			window.removeEventListener('scroll', handleScroll, true);
+		};
+	}, [isOpen]);
+
+	return (
+		<div className="dropdown position-relative" ref={menuRef}>
+			<button
+				type="button"
+				className={`btn btn-sm ${
+					isOpen ? 'btn-secondary bg-secondary-subtle' : 'btn-light'
+				} border-0 text-muted p-0 rounded-circle d-flex align-items-center justify-content-center`}
+				style={{
+					width: '28px',
+					height: '28px',
+					transition: 'all 0.15s ease'
+				}}
+				onClick={handleToggle}
+				title="Subtask options"
+				aria-expanded={isOpen}
+			>
+				<i className="bi bi-three-dots-vertical fs-7"></i>
+			</button>
+
+			{isOpen && menuPos && (
+				<div
+					className="dropdown-menu show shadow-lg border-0 py-2 position-fixed"
+					style={{
+						top: `${menuPos.top}px`,
+						left: `${menuPos.left}px`,
+						zIndex: 1075,
+						minWidth: '200px',
+						borderRadius: '12px',
+						boxShadow:
+							'0 12px 30px rgba(15, 23, 42, 0.15), 0 2px 8px rgba(15, 23, 42, 0.08)'
+					}}
+				>
+					<div className="px-3 py-1 border-bottom mb-1">
+						<span
+							className="text-uppercase text-muted fw-bold"
+							style={{
+								fontSize: '0.7rem',
+								letterSpacing: '0.5px'
+							}}
+						>
+							Subtask Options
+						</span>
+					</div>
+					{onEditTitle && (
+						<button
+							type="button"
+							className="dropdown-item d-flex align-items-center gap-2 px-3 py-2 fs-7 text-dark rounded-2 mx-1"
+							style={{ width: 'calc(100% - 8px)' }}
+							onClick={() => {
+								setIsOpen(false);
+								onEditTitle();
+							}}
+						>
+							<i className="bi bi-pencil text-muted"></i>
+							<span>Edit subtask title</span>
+						</button>
+					)}
+					<button
+						type="button"
+						className="dropdown-item d-flex align-items-center gap-2 px-3 py-2 fs-7 text-dark rounded-2 mx-1"
+						style={{ width: 'calc(100% - 8px)' }}
+						onClick={() => {
+							setIsOpen(false);
+							onConvertToCard(subtask);
+						}}
+					>
+						<i className="bi bi-box-arrow-up-right text-primary"></i>
+						<span>Convert to new card</span>
+					</button>
+					<div className="dropdown-divider my-1"></div>
+					<button
+						type="button"
+						className="dropdown-item d-flex align-items-center gap-2 px-3 py-2 fs-7 text-danger rounded-2 mx-1"
+						style={{ width: 'calc(100% - 8px)' }}
+						onClick={() => {
+							setIsOpen(false);
+							onDelete(subtask.id);
+						}}
+					>
+						<i className="bi bi-trash3"></i>
+						<span>Delete subtask</span>
+					</button>
+				</div>
+			)}
+		</div>
+	);
+};
+
+// ==========================================
+// Priority Configuration & Types
+// ==========================================
+
+export type PriorityLevel = 'low' | 'medium' | 'high' | 'urgent';
+
+export interface PriorityOption {
+	value: PriorityLevel;
+	label: string;
+	color: string;
+	bgColor: string;
+	icon: string;
+}
+
+const PRIORITY_OPTIONS: readonly PriorityOption[] = [
+	{
+		value: 'urgent',
+		label: 'Urgent',
+		color: '#ef4444',
+		bgColor: '#fef2f2',
+		icon: 'bi bi-exclamation-diamond-fill'
+	},
+	{
+		value: 'high',
+		label: 'High',
+		color: '#f97316',
+		bgColor: '#fff7ed',
+		icon: 'bi bi-flag-fill'
+	},
+	{
+		value: 'medium',
+		label: 'Medium',
+		color: '#eab308',
+		bgColor: '#fefce8',
+		icon: 'bi bi-flag-fill'
+	},
+	{
+		value: 'low',
+		label: 'Low',
+		color: '#3b82f6',
+		bgColor: '#eff6ff',
+		icon: 'bi bi-flag'
+	}
+];
+
+// ==========================================
+// Subcomponent: SubtaskPriorityDropdown
+// ==========================================
+
+interface SubtaskPriorityDropdownProps {
+	priority?: PriorityLevel;
+	onChange: (priority?: PriorityLevel) => void;
+	showLabelWhenEmpty?: boolean;
+}
+
+const SubtaskPriorityDropdown: React.FC<SubtaskPriorityDropdownProps> = ({
+	priority,
+	onChange,
+	showLabelWhenEmpty = true
+}) => {
+	const [isOpen, setIsOpen] = useState(false);
+	const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(
+		null
+	);
+	const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+	const handleToggle = () => {
+		if (!isOpen && dropdownRef.current) {
+			const rect = dropdownRef.current.getBoundingClientRect();
+			const menuHeight = 220;
+			const menuWidth = 160;
+			const spaceBelow = window.innerHeight - rect.bottom;
+			const openUp = spaceBelow < menuHeight && rect.top > menuHeight;
+			const top = openUp ? rect.top - menuHeight - 4 : rect.bottom + 4;
+			const left = Math.max(10, rect.right - menuWidth);
+			setMenuPos({ top, left });
+		}
+		setIsOpen(prev => !prev);
+	};
+
+	useEffect(() => {
+		const handleClickOutside = (e: MouseEvent) => {
+			if (
+				dropdownRef.current &&
+				!dropdownRef.current.contains(e.target as Node)
+			) {
+				setIsOpen(false);
+			}
+		};
+		const handleScroll = () => {
+			if (isOpen) setIsOpen(false);
+		};
+		if (isOpen) {
+			document.addEventListener('mousedown', handleClickOutside);
+			window.addEventListener('scroll', handleScroll, true);
+		}
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside);
+			window.removeEventListener('scroll', handleScroll, true);
+		};
+	}, [isOpen]);
+
+	const selectedOpt = PRIORITY_OPTIONS.find(p => p.value === priority);
+
+	return (
+		<div className="dropdown position-relative" ref={dropdownRef}>
+			<button
+				type="button"
+				className={`btn btn-sm ${
+					priority
+						? 'border fw-medium'
+						: 'btn-light border text-muted'
+				} d-flex align-items-center gap-1 fs-8 px-2`}
+				style={{
+					height: '28px',
+					color: selectedOpt ? selectedOpt.color : undefined,
+					backgroundColor: selectedOpt
+						? selectedOpt.bgColor
+						: undefined
+				}}
+				onClick={handleToggle}
+				title={
+					selectedOpt
+						? `Priority: ${selectedOpt.label}`
+						: 'Choose priority'
+				}
+				aria-expanded={isOpen}
+			>
+				<i
+					className={selectedOpt ? selectedOpt.icon : 'bi bi-flag'}
+				></i>
+				{selectedOpt ? (
+					<span>{selectedOpt.label}</span>
+				) : showLabelWhenEmpty ? (
+					<span>Priority</span>
+				) : null}
+			</button>
+
+			{isOpen && menuPos && (
+				<div
+					className="dropdown-menu show shadow border py-1 position-fixed"
+					style={{
+						top: `${menuPos.top}px`,
+						left: `${menuPos.left}px`,
+						zIndex: 1075,
+						minWidth: '160px'
+					}}
+				>
+					<h6 className="dropdown-header fs-8 text-uppercase fw-bold">
+						Select Priority
+					</h6>
+					{PRIORITY_OPTIONS.map(opt => (
+						<button
+							key={opt.value}
+							type="button"
+							className={`dropdown-item d-flex align-items-center gap-2 py-1 fs-8 ${
+								priority === opt.value
+									? 'active fw-semibold'
+									: ''
+							}`}
+							onClick={() => {
+								onChange(
+									priority === opt.value
+										? undefined
+										: opt.value
+								);
+								setIsOpen(false);
+							}}
+						>
+							<i
+								className={opt.icon}
+								style={{ color: opt.color }}
+							></i>
+							<span>{opt.label}</span>
+							{priority === opt.value && (
+								<i className="bi bi-check2 ms-auto"></i>
+							)}
+						</button>
+					))}
+					{priority && (
+						<>
+							<div className="dropdown-divider my-1"></div>
+							<button
+								type="button"
+								className="dropdown-item text-danger d-flex align-items-center gap-2 py-1 fs-8"
+								onClick={() => {
+									onChange(undefined);
+									setIsOpen(false);
+								}}
+							>
+								<i className="bi bi-x-circle"></i>
+								<span>Clear Priority</span>
+							</button>
+						</>
+					)}
+				</div>
+			)}
+		</div>
+	);
+};
+
+// ==========================================
+// Subcomponent: SubtaskDatePickerDropdown
+// ==========================================
+
+interface SubtaskDatePickerDropdownProps {
+	startDate?: string;
+	dueDate?: string;
+	onChange: (startDate?: string, dueDate?: string) => void;
+	buttonClassName?: string;
+	showLabelWhenEmpty?: boolean;
+	emptyLabel?: string;
+}
+
+const SubtaskDatePickerDropdown: React.FC<SubtaskDatePickerDropdownProps> = ({
+	startDate,
+	dueDate,
+	onChange,
+	buttonClassName,
+	showLabelWhenEmpty = true,
+	emptyLabel = 'Due Date'
+}) => {
+	const [isOpen, setIsOpen] = useState(false);
+	const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(
+		null
+	);
+	const [tempStartDate, setTempStartDate] = useState(startDate || '');
+	const [tempDueDate, setTempDueDate] = useState(dueDate || '');
+	const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+	const handleToggle = () => {
+		if (!isOpen && dropdownRef.current) {
+			const rect = dropdownRef.current.getBoundingClientRect();
+			const menuHeight = 350;
+			const menuWidth = 320;
+			const spaceBelow = window.innerHeight - rect.bottom;
+			const openUp = spaceBelow < menuHeight && rect.top > menuHeight;
+			const top = openUp ? rect.top - menuHeight - 4 : rect.bottom + 4;
+			const left = Math.max(
+				10,
+				Math.min(
+					window.innerWidth - menuWidth - 10,
+					rect.right - menuWidth
+				)
+			);
+			setMenuPos({ top, left });
+		}
+		setIsOpen(prev => !prev);
+	};
+
+	useEffect(() => {
+		setTempStartDate(startDate || '');
+		setTempDueDate(dueDate || '');
+	}, [startDate, dueDate, isOpen]);
+
+	useEffect(() => {
+		const handleClickOutside = (e: MouseEvent) => {
+			if (
+				dropdownRef.current &&
+				!dropdownRef.current.contains(e.target as Node)
+			) {
+				setIsOpen(false);
+			}
+		};
+		const handleScroll = () => {
+			if (isOpen) setIsOpen(false);
+		};
+		if (isOpen) {
+			document.addEventListener('mousedown', handleClickOutside);
+			window.addEventListener('scroll', handleScroll, true);
+		}
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside);
+			window.removeEventListener('scroll', handleScroll, true);
+		};
+	}, [isOpen]);
+
+	const getTodayStr = () => new Date().toISOString().split('T')[0];
+	const getTomorrowStr = () => {
+		const d = new Date();
+		d.setDate(d.getDate() + 1);
+		return d.toISOString().split('T')[0];
+	};
+	const getNextWeekStr = () => {
+		const d = new Date();
+		d.setDate(d.getDate() + 7);
+		return d.toISOString().split('T')[0];
+	};
+
+	const handleApply = () => {
+		onChange(tempStartDate || undefined, tempDueDate || undefined);
+		setIsOpen(false);
+	};
+
+	const handleClear = () => {
+		setTempStartDate('');
+		setTempDueDate('');
+		onChange(undefined, undefined);
+		setIsOpen(false);
+	};
+
+	const hasDates = !!(startDate || dueDate);
+
+	return (
+		<div className="dropdown position-relative" ref={dropdownRef}>
+			<button
+				type="button"
+				className={
+					buttonClassName ||
+					`btn btn-sm ${
+						hasDates
+							? 'bg-primary-subtle text-primary border-primary-subtle fw-medium'
+							: 'btn-light border text-muted'
+					} d-inline-flex align-items-center gap-1 fs-8 px-2 py-0 rounded-pill border`
+				}
+				style={{
+					height: '26px',
+					fontSize: '0.78rem',
+					transition: 'all 0.15s ease'
+				}}
+				onClick={handleToggle}
+				title="Choose start date & due date"
+				aria-expanded={isOpen}
+			>
+				<i className="bi bi-calendar3 text-primary fs-8"></i>
+				{hasDates ? (
+					<span className="d-inline-flex align-items-center">
+						{startDate && (
+							<span>{formatDateDisplay(startDate)}</span>
+						)}
+						{startDate && dueDate && (
+							<i
+								className="bi bi-arrow-right-short mx-1 text-primary-emphasis align-middle"
+								style={{ fontSize: '1.15rem', lineHeight: 1 }}
+							></i>
+						)}
+						{dueDate && <span>{formatDateDisplay(dueDate)}</span>}
+					</span>
+				) : showLabelWhenEmpty ? (
+					<span>{emptyLabel}</span>
+				) : null}
+			</button>
+
+			{isOpen && menuPos && (
+				<div
+					className="dropdown-menu show shadow-lg border-0 p-3 position-fixed"
+					style={{
+						top: `${menuPos.top}px`,
+						left: `${menuPos.left}px`,
+						zIndex: 1075,
+						minWidth: '310px',
+						borderRadius: '12px',
+						backgroundColor: '#ffffff',
+						boxShadow:
+							'0 12px 32px rgba(15, 23, 42, 0.15), 0 2px 6px rgba(15, 23, 42, 0.08)'
+					}}
+				>
+					{/* Modal Header */}
+					<div className="d-flex align-items-center justify-content-between pb-2 mb-3 border-bottom">
+						<div className="d-flex align-items-center gap-2">
+							<div
+								className="rounded-circle d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary"
+								style={{ width: '28px', height: '28px' }}
+							>
+								<i className="bi bi-calendar3 fs-8"></i>
+							</div>
+							<div>
+								<h6 className="m-0 fw-semibold fs-7 text-dark">
+									Schedule & Due Date
+								</h6>
+							</div>
+						</div>
+						{(tempStartDate || tempDueDate) && (
+							<button
+								type="button"
+								className="btn btn-sm btn-link text-danger text-decoration-none p-0 fs-8 fw-medium"
+								onClick={handleClear}
+							>
+								Clear
+							</button>
+						)}
+					</div>
+
+					{/* Quick Select Buttons */}
+					<div className="mb-3">
+						<div
+							className="text-muted fs-8 fw-semibold mb-1 text-uppercase"
+							style={{ letterSpacing: '0.5px' }}
+						>
+							Quick Due Date
+						</div>
+						<div className="d-flex gap-1 flex-wrap">
+							<button
+								type="button"
+								className={`btn btn-sm py-1 px-2 fs-8 rounded-pill border ${
+									tempDueDate === getTodayStr()
+										? 'btn-primary text-white border-primary fw-medium'
+										: 'btn-light text-dark'
+								}`}
+								onClick={() => setTempDueDate(getTodayStr())}
+							>
+								Today
+							</button>
+							<button
+								type="button"
+								className={`btn btn-sm py-1 px-2 fs-8 rounded-pill border ${
+									tempDueDate === getTomorrowStr()
+										? 'btn-primary text-white border-primary fw-medium'
+										: 'btn-light text-dark'
+								}`}
+								onClick={() => setTempDueDate(getTomorrowStr())}
+							>
+								Tomorrow
+							</button>
+							<button
+								type="button"
+								className={`btn btn-sm py-1 px-2 fs-8 rounded-pill border ${
+									tempDueDate === getNextWeekStr()
+										? 'btn-primary text-white border-primary fw-medium'
+										: 'btn-light text-dark'
+								}`}
+								onClick={() => setTempDueDate(getNextWeekStr())}
+							>
+								Next Week
+							</button>
+						</div>
+					</div>
+
+					{/* Date Inputs */}
+					<div className="row g-2 mb-3">
+						<div className="col-6">
+							<label className="form-label fs-8 text-muted mb-1 d-flex align-items-center gap-1 fw-medium">
+								<i className="bi bi-calendar-event text-primary"></i>
+								<span>Start Date</span>
+							</label>
+							<input
+								type="date"
+								className="form-control form-control-sm rounded-3 shadow-none border"
+								style={{
+									fontSize: '0.8rem',
+									backgroundColor: '#f8fafc',
+									height: '34px'
+								}}
+								value={tempStartDate}
+								onChange={e => setTempStartDate(e.target.value)}
+							/>
+						</div>
+						<div className="col-6">
+							<label className="form-label fs-8 text-muted mb-1 d-flex align-items-center gap-1 fw-medium">
+								<i className="bi bi-calendar-check text-danger"></i>
+								<span>Due Date</span>
+							</label>
+							<input
+								type="date"
+								className="form-control form-control-sm rounded-3 shadow-none border"
+								style={{
+									fontSize: '0.8rem',
+									backgroundColor: '#f8fafc',
+									height: '34px'
+								}}
+								value={tempDueDate}
+								onChange={e => setTempDueDate(e.target.value)}
+							/>
+						</div>
+					</div>
+
+					{/* Modal Footer / Actions */}
+					<div className="d-flex align-items-center justify-content-between pt-2 border-top">
+						<button
+							type="button"
+							className="btn btn-sm btn-light text-muted px-3 py-1 fs-8 rounded-3"
+							onClick={() => setIsOpen(false)}
+						>
+							Cancel
+						</button>
+						<button
+							type="button"
+							className="btn btn-sm btn-primary px-3 py-1 fs-8 rounded-3 fw-medium shadow-xs"
+							onClick={handleApply}
+						>
+							Save Date
+						</button>
+					</div>
+				</div>
+			)}
+		</div>
+	);
+};
+
+// ==========================================
+// Subcomponent: SubtaskAssigneeDropdown
+// ==========================================
+
+interface SubtaskAssigneeDropdownProps {
+	assignee?: Member;
+	onSelectAssignee: (member?: Member) => void;
+	showLabelWhenEmpty?: boolean;
+}
+
+const SubtaskAssigneeDropdown: React.FC<SubtaskAssigneeDropdownProps> = ({
+	assignee,
+	onSelectAssignee,
+	showLabelWhenEmpty = false
+}) => {
+	const [isOpen, setIsOpen] = useState(false);
+	const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(
+		null
+	);
+	const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+	const handleToggle = () => {
+		if (!isOpen && dropdownRef.current) {
+			const rect = dropdownRef.current.getBoundingClientRect();
+			const menuHeight = 220;
+			const menuWidth = 190;
+			const spaceBelow = window.innerHeight - rect.bottom;
+			const openUp = spaceBelow < menuHeight && rect.top > menuHeight;
+			const top = openUp ? rect.top - menuHeight - 4 : rect.bottom + 4;
+			const left = Math.max(10, rect.right - menuWidth);
+			setMenuPos({ top, left });
+		}
+		setIsOpen(prev => !prev);
+	};
+
+	useEffect(() => {
+		const handleClickOutside = (e: MouseEvent) => {
+			if (
+				dropdownRef.current &&
+				!dropdownRef.current.contains(e.target as Node)
+			) {
+				setIsOpen(false);
+			}
+		};
+		const handleScroll = () => {
+			if (isOpen) setIsOpen(false);
+		};
+		if (isOpen) {
+			document.addEventListener('mousedown', handleClickOutside);
+			window.addEventListener('scroll', handleScroll, true);
+		}
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside);
+			window.removeEventListener('scroll', handleScroll, true);
+		};
+	}, [isOpen]);
+
+	return (
+		<div className="dropdown position-relative" ref={dropdownRef}>
+			{showLabelWhenEmpty ? (
+				<button
+					type="button"
+					className={`btn btn-sm ${
+						assignee
+							? 'btn-light border text-dark fw-medium'
+							: 'btn-light border text-muted'
+					} d-flex align-items-center gap-1 fs-8 px-2`}
+					style={{ height: '28px' }}
+					onClick={handleToggle}
+					title={
+						assignee
+							? `Assignee: ${assignee.name}`
+							: 'Assign member'
+					}
+					aria-expanded={isOpen}
+				>
+					{assignee ? (
+						<>
+							<img
+								src={assignee.avatar}
+								alt={assignee.name}
+								className="rounded-circle"
+								style={{
+									width: '18px',
+									height: '18px',
+									objectFit: 'cover'
+								}}
+							/>
+							<span>{assignee.name}</span>
+						</>
+					) : (
+						<>
+							<i className="bi bi-person-plus fs-7"></i>
+							<span>Assign</span>
+						</>
+					)}
+				</button>
+			) : (
+				<button
+					type="button"
+					className="btn btn-sm btn-light border-0 p-0 rounded-circle"
+					style={{
+						width: '28px',
+						height: '28px'
+					}}
+					onClick={handleToggle}
+					title={
+						assignee
+							? `Assigned to: ${assignee.name}`
+							: 'Assign member'
+					}
+					aria-expanded={isOpen}
+				>
+					{assignee ? (
+						<img
+							src={assignee.avatar}
+							alt={assignee.name}
+							className="rounded-circle w-100 h-100 object-fit-cover"
+						/>
+					) : (
+						<span className="d-flex align-items-center justify-content-center w-100 h-100 text-muted bg-white border rounded-circle">
+							<i className="bi bi-person-plus fs-7"></i>
+						</span>
+					)}
+				</button>
+			)}
+
+			{isOpen && menuPos && (
+				<div
+					className="dropdown-menu show shadow-lg border-0 py-2 position-fixed"
+					style={{
+						top: `${menuPos.top}px`,
+						left: `${menuPos.left}px`,
+						zIndex: 1075,
+						minWidth: '190px',
+						borderRadius: '12px'
+					}}
+				>
+					<div className="px-3 py-1 border-bottom mb-1">
+						<span
+							className="text-uppercase text-muted fw-bold"
+							style={{
+								fontSize: '0.7rem',
+								letterSpacing: '0.5px'
+							}}
+						>
+							Assign Member
+						</span>
+					</div>
+					{MOCK_MEMBERS.map(m => (
+						<button
+							key={m.id}
+							type="button"
+							className={`dropdown-item d-flex align-items-center gap-2 py-1 fs-8 ${
+								assignee?.id === m.id ? 'active' : ''
+							}`}
+							onClick={() => {
+								onSelectAssignee(
+									assignee?.id === m.id ? undefined : m
+								);
+								setIsOpen(false);
+							}}
+						>
+							<img
+								src={m.avatar}
+								alt={m.name}
+								className="rounded-circle"
+								style={{
+									width: '20px',
+									height: '20px',
+									objectFit: 'cover'
+								}}
+							/>
+							<span>{m.name}</span>
+							{assignee?.id === m.id && (
+								<i className="bi bi-check2 ms-auto"></i>
+							)}
+						</button>
+					))}
+					{assignee && (
+						<>
+							<div className="dropdown-divider my-1"></div>
+							<button
+								type="button"
+								className="dropdown-item text-danger d-flex align-items-center gap-2 py-1 fs-8"
+								onClick={() => {
+									onSelectAssignee(undefined);
+									setIsOpen(false);
+								}}
+							>
+								<i className="bi bi-x-circle"></i>
+								<span>Remove Assignee</span>
+							</button>
+						</>
+					)}
+				</div>
+			)}
 		</div>
 	);
 };
@@ -472,40 +1513,101 @@ interface SubtasksSectionProps {
 	onUpdateSubtasks: (subtasks: SubTask[]) => void;
 	isAddingSubtask: boolean;
 	setIsAddingSubtask: (val: boolean) => void;
+	onConvertToCard?: (subtask: SubTask) => void;
+	onLogActivity?: (type: CardActivity['type'], text: string) => void;
 }
 
 const SubtasksSection: React.FC<SubtasksSectionProps> = ({
 	subtasks,
 	onUpdateSubtasks,
 	isAddingSubtask,
-	setIsAddingSubtask
+	setIsAddingSubtask,
+	onConvertToCard,
+	onLogActivity
 }) => {
 	const [newTitle, setNewTitle] = useState('');
-	const [newAssignee, setNewAssignee] = useState<Member | undefined>(undefined);
+	const [newAssignee, setNewAssignee] = useState<Member | undefined>(
+		undefined
+	);
 	const [newStartDate, setNewStartDate] = useState('');
 	const [newDueDate, setNewDueDate] = useState('');
+	const [newPriority, setNewPriority] = useState<PriorityLevel | undefined>(
+		undefined
+	);
+	const [editingSubtaskId, setEditingSubtaskId] = useState<string | null>(
+		null
+	);
+	const [editingTitle, setEditingTitle] = useState('');
 
 	const completedCount = subtasks.filter(st => st.completed).length;
-	const progressPercent = subtasks.length > 0 ? Math.round((completedCount / subtasks.length) * 100) : 0;
+	const progressPercent =
+		subtasks.length > 0
+			? Math.round((completedCount / subtasks.length) * 100)
+			: 0;
+
+	const handleSaveEditTitle = (id: string) => {
+		const trimmed = editingTitle.trim();
+		const current = subtasks.find(st => st.id === id);
+		if (trimmed && current && trimmed !== current.title) {
+			onUpdateSubtasks(
+				subtasks.map(st =>
+					st.id === id ? { ...st, title: trimmed } : st
+				)
+			);
+			onLogActivity?.('subtask', `renamed subtask to "${trimmed}"`);
+		}
+		setEditingSubtaskId(null);
+	};
 
 	const handleToggleSubtask = (id: string) => {
+		const current = subtasks.find(st => st.id === id);
+		const willBeCompleted = !current?.completed;
 		onUpdateSubtasks(
 			subtasks.map(st =>
-				st.id === id ? { ...st, completed: !st.completed } : st
+				st.id === id ? { ...st, completed: willBeCompleted } : st
 			)
 		);
+		if (current) {
+			onLogActivity?.(
+				'subtask',
+				`${willBeCompleted ? 'completed' : 'marked incomplete'} subtask "${current.title}"`
+			);
+		}
 	};
 
 	const handleDeleteSubtask = (id: string) => {
+		const current = subtasks.find(st => st.id === id);
 		onUpdateSubtasks(subtasks.filter(st => st.id !== id));
+		if (current) {
+			onLogActivity?.('subtask', `deleted subtask "${current.title}"`);
+		}
+	};
+
+	const handleConvertToCard = (subtask: SubTask) => {
+		if (onConvertToCard) {
+			onConvertToCard(subtask);
+		}
+		onLogActivity?.(
+			'subtask',
+			`converted subtask "${subtask.title}" to card`
+		);
 	};
 
 	const handleUpdateAssignee = (id: string, member?: Member) => {
+		const current = subtasks.find(st => st.id === id);
 		onUpdateSubtasks(
 			subtasks.map(st =>
 				st.id === id ? { ...st, assignee: member } : st
 			)
 		);
+		if (current) {
+			onLogActivity?.(
+				'member',
+				member
+					? `assigned "${current.title}" to ${member.name}`
+					: `removed assignee from "${current.title}"`
+			);
+		}
 	};
 
 	const handleUpdateDates = (
@@ -513,28 +1615,62 @@ const SubtasksSection: React.FC<SubtasksSectionProps> = ({
 		startDate?: string,
 		dueDate?: string
 	) => {
+		const current = subtasks.find(st => st.id === id);
 		onUpdateSubtasks(
 			subtasks.map(st =>
 				st.id === id ? { ...st, startDate, dueDate } : st
 			)
 		);
+		if (current) {
+			const dateStr = [
+				startDate ? formatDateDisplay(startDate) : '',
+				dueDate ? formatDateDisplay(dueDate) : ''
+			]
+				.filter(Boolean)
+				.join(' → ');
+			onLogActivity?.(
+				'date',
+				dateStr
+					? `updated dates for subtask "${current.title}" to ${dateStr}`
+					: `cleared dates for subtask "${current.title}"`
+			);
+		}
+	};
+
+	const handleUpdatePriority = (id: string, priority?: PriorityLevel) => {
+		const current = subtasks.find(st => st.id === id);
+		onUpdateSubtasks(
+			subtasks.map(st => (st.id === id ? { ...st, priority } : st))
+		);
+		if (current) {
+			onLogActivity?.(
+				'subtask',
+				priority
+					? `set priority of "${current.title}" to ${priority}`
+					: `cleared priority for "${current.title}"`
+			);
+		}
 	};
 
 	const handleAddSubtask = () => {
 		if (!newTitle.trim()) return;
+		const subtaskTitle = newTitle.trim();
 		const newSubtask: SubTask = {
 			id: `subtask-${Date.now()}`,
-			title: newTitle.trim(),
+			title: subtaskTitle,
 			completed: false,
 			assignee: newAssignee,
 			startDate: newStartDate || undefined,
-			dueDate: newDueDate || undefined
+			dueDate: newDueDate || undefined,
+			priority: newPriority
 		};
 		onUpdateSubtasks([...subtasks, newSubtask]);
+		onLogActivity?.('subtask', `added subtask "${subtaskTitle}"`);
 		setNewTitle('');
 		setNewAssignee(undefined);
 		setNewStartDate('');
 		setNewDueDate('');
+		setNewPriority(undefined);
 		setIsAddingSubtask(false);
 	};
 
@@ -567,10 +1703,15 @@ const SubtasksSection: React.FC<SubtasksSectionProps> = ({
 				<div className="ps-4 mb-3">
 					<div className="d-flex align-items-center gap-2 mb-1 fs-8 text-muted">
 						<span>{progressPercent}%</span>
-						<div className="progress flex-grow-1" style={{ height: '6px' }}>
+						<div
+							className="progress flex-grow-1"
+							style={{ height: '6px' }}
+						>
 							<div
 								className={`progress-bar ${
-									progressPercent === 100 ? 'bg-success' : 'bg-primary'
+									progressPercent === 100
+										? 'bg-success'
+										: 'bg-primary'
 								}`}
 								role="progressbar"
 								style={{ width: `${progressPercent}%` }}
@@ -588,195 +1729,127 @@ const SubtasksSection: React.FC<SubtasksSectionProps> = ({
 				{subtasks.map(st => (
 					<div
 						key={st.id}
-						className="d-flex flex-column p-2 rounded border bg-light bg-opacity-50"
+						className={`d-flex flex-column p-2 rounded-3 border transition-all ${
+							st.completed
+								? 'bg-light bg-opacity-50'
+								: 'bg-white shadow-xs'
+						}`}
+						style={{ transition: 'all 0.15s ease' }}
 					>
-						<div className="d-flex align-items-center justify-content-between gap-2">
-							<div className="d-flex align-items-center gap-2 flex-grow-1">
+						<div className="d-flex align-items-start justify-content-between gap-2">
+							<div
+								className="d-flex align-items-start gap-2 flex-grow-1"
+								style={{ minWidth: 0 }}
+							>
 								<input
 									type="checkbox"
-									className="form-check-input mt-0 cursor-pointer"
+									className="form-check-input mt-1 cursor-pointer flex-shrink-0"
 									style={{ width: '18px', height: '18px' }}
 									checked={st.completed}
 									onChange={() => handleToggleSubtask(st.id)}
 									id={`subtask-check-${st.id}`}
 								/>
-								<label
-									htmlFor={`subtask-check-${st.id}`}
-									className={`m-0 cursor-pointer user-select-none ${
-										st.completed
-											? 'text-decoration-line-through text-muted fst-italic'
-											: 'text-dark fw-medium'
-									}`}
-								>
-									{st.title}
-								</label>
+								{editingSubtaskId === st.id ? (
+									<textarea
+										className="form-control form-control-sm py-1 px-2 fw-medium border-primary shadow-none flex-grow-1"
+										rows={1}
+										style={{
+											minHeight: '28px',
+											fontSize: '0.875rem',
+											lineHeight: '1.4',
+											resize: 'none',
+											wordBreak: 'break-word',
+											overflowWrap: 'anywhere'
+										}}
+										value={editingTitle}
+										onChange={e =>
+											setEditingTitle(e.target.value)
+										}
+										onBlur={() =>
+											handleSaveEditTitle(st.id)
+										}
+										onKeyDown={e => {
+											if (
+												e.key === 'Enter' &&
+												!e.shiftKey
+											) {
+												e.preventDefault();
+												handleSaveEditTitle(st.id);
+											}
+											if (e.key === 'Escape')
+												setEditingSubtaskId(null);
+										}}
+										autoFocus
+									/>
+								) : (
+									<div
+										className="flex-grow-1 min-width-0"
+										style={{ minWidth: 0 }}
+									>
+										<span
+											className={`user-select-none cursor-pointer d-block ${
+												st.completed
+													? 'text-decoration-line-through text-muted fst-italic'
+													: 'text-dark fw-medium'
+											}`}
+											style={{
+												cursor: 'pointer',
+												wordBreak: 'break-word',
+												overflowWrap: 'anywhere',
+												lineHeight: '1.4',
+												minWidth: 0
+											}}
+											onClick={() => {
+												setEditingSubtaskId(st.id);
+												setEditingTitle(st.title);
+											}}
+											title={`${st.title} (Click to edit title)`}
+										>
+											{st.title}
+										</span>
+									</div>
+								)}
 							</div>
 
-							<div className="d-flex align-items-center gap-2">
+							<div className="d-flex align-items-center gap-2 flex-shrink-0 mt-0.5">
 								{/* Assignee button / avatar */}
-								<div className="dropdown">
-									<button
-										type="button"
-										className="btn btn-sm btn-light border-0 p-0 rounded-circle"
-										style={{ width: '28px', height: '28px' }}
-										data-bs-toggle="dropdown"
-										title={st.assignee ? `Assigned to: ${st.assignee.name}` : 'Assign member'}
-									>
-										{st.assignee ? (
-											<img
-												src={st.assignee.avatar}
-												alt={st.assignee.name}
-												className="rounded-circle w-100 h-100 object-fit-cover"
-											/>
-										) : (
-											<span className="d-flex align-items-center justify-content-center w-100 h-100 text-muted bg-white border rounded-circle">
-												<i className="bi bi-person-plus fs-7"></i>
-											</span>
-										)}
-									</button>
-									<ul className="dropdown-menu dropdown-menu-end shadow-sm">
-										<li>
-											<h6 className="dropdown-header">Assign Member</h6>
-										</li>
-										{MOCK_MEMBERS.map(m => (
-											<li key={m.id}>
-												<button
-													type="button"
-													className={`dropdown-item d-flex align-items-center gap-2 ${
-														st.assignee?.id === m.id ? 'active' : ''
-													}`}
-													onClick={() =>
-														handleUpdateAssignee(
-															st.id,
-															st.assignee?.id === m.id ? undefined : m
-														)
-													}
-												>
-													<img
-														src={m.avatar}
-														alt={m.name}
-														className="rounded-circle"
-														style={{ width: '22px', height: '22px', objectFit: 'cover' }}
-													/>
-													<span>{m.name}</span>
-													{st.assignee?.id === m.id && (
-														<i className="bi bi-check2 ms-auto"></i>
-													)}
-												</button>
-											</li>
-										))}
-										{st.assignee && (
-											<>
-												<li>
-													<hr className="dropdown-divider" />
-												</li>
-												<li>
-													<button
-														type="button"
-														className="dropdown-item text-danger d-flex align-items-center gap-2"
-														onClick={() => handleUpdateAssignee(st.id, undefined)}
-													>
-														<i className="bi bi-x-circle"></i>
-														<span>Remove Assignee</span>
-													</button>
-												</li>
-											</>
-										)}
-									</ul>
-								</div>
+								<SubtaskAssigneeDropdown
+									assignee={st.assignee}
+									onSelectAssignee={member =>
+										handleUpdateAssignee(st.id, member)
+									}
+									showLabelWhenEmpty={false}
+								/>
 
-								{/* Date Icon button with Dropdown for Start Date & Due Date */}
-								<div className="dropdown">
-									<button
-										type="button"
-										className={`btn btn-sm ${
-											st.startDate || st.dueDate
-												? 'btn-light border text-primary fw-medium'
-												: 'btn-light border text-muted'
-										} px-2 py-0 d-flex align-items-center gap-1 fs-8`}
-										style={{ height: '28px' }}
-										data-bs-toggle="dropdown"
-										data-bs-auto-close="outside"
-										title="Choose start date & due date"
-									>
-										<i className="bi bi-calendar-event"></i>
-										{st.startDate || st.dueDate ? (
-											<span>
-												{st.startDate ? st.startDate.slice(5) : ''}
-												{st.startDate && st.dueDate ? ' - ' : ''}
-												{st.dueDate ? st.dueDate.slice(5) : ''}
-											</span>
-										) : null}
-									</button>
-									<div
-										className="dropdown-menu dropdown-menu-end shadow p-3"
-										style={{ minWidth: '260px' }}
-									>
-										<h6 className="dropdown-header px-0 pt-0 text-uppercase fs-8 fw-bold">
-											Subtask Dates
-										</h6>
-										<div className="mb-2">
-											<label className="form-label fs-8 text-muted mb-1 d-flex align-items-center gap-1">
-												<i className="bi bi-calendar-check"></i>
-												<span>Start Date</span>
-											</label>
-											<input
-												type="date"
-												className="form-control form-control-sm shadow-none"
-												value={st.startDate || ''}
-												onChange={e =>
-													handleUpdateDates(
-														st.id,
-														e.target.value || undefined,
-														st.dueDate
-													)
-												}
-											/>
-										</div>
-										<div className="mb-3">
-											<label className="form-label fs-8 text-muted mb-1 d-flex align-items-center gap-1">
-												<i className="bi bi-calendar-x"></i>
-												<span>Due Date</span>
-											</label>
-											<input
-												type="date"
-												className="form-control form-control-sm shadow-none"
-												value={st.dueDate || ''}
-												onChange={e =>
-													handleUpdateDates(
-														st.id,
-														st.startDate,
-														e.target.value || undefined
-													)
-												}
-											/>
-										</div>
-										{(st.startDate || st.dueDate) && (
-											<div className="d-flex justify-content-end">
-												<button
-													type="button"
-													className="btn btn-sm btn-link text-danger text-decoration-none p-0 fs-8"
-													onClick={() =>
-														handleUpdateDates(st.id, undefined, undefined)
-													}
-												>
-													Clear dates
-												</button>
-											</div>
-										)}
-									</div>
-								</div>
+								{/* Date button with smooth dropdown for Start Date & Due Date */}
+								<SubtaskDatePickerDropdown
+									startDate={st.startDate}
+									dueDate={st.dueDate}
+									onChange={(sDate, dDate) =>
+										handleUpdateDates(st.id, sDate, dDate)
+									}
+									showLabelWhenEmpty={false}
+								/>
 
-								{/* Delete Subtask */}
-								<button
-									type="button"
-									className="btn btn-sm btn-light border-0 text-muted p-0 d-flex align-items-center justify-content-center"
-									style={{ width: '24px', height: '24px' }}
-									onClick={() => handleDeleteSubtask(st.id)}
-									title="Delete subtask"
-								>
-									<i className="bi bi-trash fs-8"></i>
-								</button>
+								{/* Priority dropdown */}
+								<SubtaskPriorityDropdown
+									priority={st.priority}
+									onChange={p =>
+										handleUpdatePriority(st.id, p)
+									}
+									showLabelWhenEmpty={false}
+								/>
+
+								{/* Subtask options (3 dots) */}
+								<SubtaskOptionsMenu
+									subtask={st}
+									onDelete={handleDeleteSubtask}
+									onConvertToCard={handleConvertToCard}
+									onEditTitle={() => {
+										setEditingSubtaskId(st.id);
+										setEditingTitle(st.title);
+									}}
+								/>
 							</div>
 						</div>
 					</div>
@@ -793,168 +1866,65 @@ const SubtasksSection: React.FC<SubtasksSectionProps> = ({
 							onChange={e => setNewTitle(e.target.value)}
 							onKeyDown={e => {
 								if (e.key === 'Enter') handleAddSubtask();
-								if (e.key === 'Escape') setIsAddingSubtask(false);
+								if (e.key === 'Escape')
+									setIsAddingSubtask(false);
 							}}
 							autoFocus
 						/>
-						<div className="d-flex align-items-center gap-2 flex-wrap mb-2">
-							{/* Assign Member for new subtask */}
-							<div className="dropdown">
+						<div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
+							{/* Left Group: Add & Cancel */}
+							<div className="d-flex align-items-center gap-2">
 								<button
 									type="button"
-									className="btn btn-sm btn-light border p-0 rounded-circle d-flex align-items-center justify-content-center"
-									style={{ width: '28px', height: '28px' }}
-									data-bs-toggle="dropdown"
-									title={newAssignee ? `Assignee: ${newAssignee.name}` : 'Choose member'}
+									className="btn btn-primary btn-sm px-3"
+									onClick={handleAddSubtask}
 								>
-									{newAssignee ? (
-										<img
-											src={newAssignee.avatar}
-											alt={newAssignee.name}
-											className="rounded-circle w-100 h-100 object-fit-cover"
-										/>
-									) : (
-										<i className="bi bi-person-plus fs-7 text-muted"></i>
-									)}
+									Add
 								</button>
-								<ul className="dropdown-menu shadow-sm">
-									<li>
-										<h6 className="dropdown-header">Choose Member</h6>
-									</li>
-									{MOCK_MEMBERS.map(m => (
-										<li key={m.id}>
-											<button
-												type="button"
-												className={`dropdown-item d-flex align-items-center gap-2 ${
-													newAssignee?.id === m.id ? 'active' : ''
-												}`}
-												onClick={() => setNewAssignee(newAssignee?.id === m.id ? undefined : m)}
-											>
-												<img
-													src={m.avatar}
-													alt={m.name}
-													className="rounded-circle"
-													style={{ width: '20px', height: '20px', objectFit: 'cover' }}
-												/>
-												<span>{m.name}</span>
-												{newAssignee?.id === m.id && (
-													<i className="bi bi-check2 ms-auto"></i>
-												)}
-											</button>
-										</li>
-									))}
-									{newAssignee && (
-										<>
-											<li>
-												<hr className="dropdown-divider" />
-											</li>
-											<li>
-												<button
-													type="button"
-													className="dropdown-item text-danger d-flex align-items-center gap-2"
-													onClick={() => setNewAssignee(undefined)}
-												>
-													<i className="bi bi-x-circle"></i>
-													<span>Remove Assignee</span>
-												</button>
-											</li>
-										</>
-									)}
-								</ul>
-							</div>
-
-							{/* Date Icon button with Dropdown for Start Date & Due Date */}
-							<div className="dropdown">
 								<button
 									type="button"
-									className={`btn btn-sm ${
-										newStartDate || newDueDate
-											? 'btn-light border text-primary fw-medium'
-											: 'btn-light border text-muted'
-									} d-flex align-items-center gap-1 fs-8 px-2`}
-									style={{ height: '28px' }}
-									data-bs-toggle="dropdown"
-									data-bs-auto-close="outside"
-									title="Choose start date & due date"
+									className="btn btn-light btn-sm text-muted"
+									onClick={() => {
+										setIsAddingSubtask(false);
+										setNewTitle('');
+										setNewAssignee(undefined);
+										setNewStartDate('');
+										setNewDueDate('');
+										setNewPriority(undefined);
+									}}
 								>
-									<i className="bi bi-calendar-event"></i>
-									{newStartDate || newDueDate ? (
-										<span>
-											{newStartDate ? newStartDate.slice(5) : ''}
-											{newStartDate && newDueDate ? ' - ' : ''}
-											{newDueDate ? newDueDate.slice(5) : ''}
-										</span>
-									) : (
-										<span>Dates</span>
-									)}
+									Cancel
 								</button>
-								<div
-									className="dropdown-menu shadow p-3"
-									style={{ minWidth: '260px' }}
-								>
-									<h6 className="dropdown-header px-0 pt-0 text-uppercase fs-8 fw-bold">
-										Select Dates
-									</h6>
-									<div className="mb-2">
-										<label className="form-label fs-8 text-muted mb-1 d-flex align-items-center gap-1">
-											<i className="bi bi-calendar-check"></i>
-											<span>Start Date</span>
-										</label>
-										<input
-											type="date"
-											className="form-control form-control-sm shadow-none"
-											value={newStartDate}
-											onChange={e => setNewStartDate(e.target.value)}
-										/>
-									</div>
-									<div className="mb-3">
-										<label className="form-label fs-8 text-muted mb-1 d-flex align-items-center gap-1">
-											<i className="bi bi-calendar-x"></i>
-											<span>Due Date</span>
-										</label>
-										<input
-											type="date"
-											className="form-control form-control-sm shadow-none"
-											value={newDueDate}
-											onChange={e => setNewDueDate(e.target.value)}
-										/>
-									</div>
-									{(newStartDate || newDueDate) && (
-										<div className="d-flex justify-content-end">
-											<button
-												type="button"
-												className="btn btn-sm btn-link text-danger text-decoration-none p-0 fs-8"
-												onClick={() => {
-													setNewStartDate('');
-													setNewDueDate('');
-												}}
-											>
-												Clear dates
-											</button>
-										</div>
-									)}
-								</div>
 							</div>
-						</div>
 
-						<div className="d-flex align-items-center gap-2">
-							<button
-								type="button"
-								className="btn btn-primary btn-sm"
-								onClick={handleAddSubtask}
-							>
-								Add
-							</button>
-							<button
-								type="button"
-								className="btn btn-light btn-sm text-muted"
-								onClick={() => {
-									setIsAddingSubtask(false);
-									setNewTitle('');
-								}}
-							>
-								Cancel
-							</button>
+							{/* Right Group: Assign, Due Date, Priority */}
+							<div className="d-flex align-items-center gap-2">
+								{/* Assign Member with text 'Assign' */}
+								<SubtaskAssigneeDropdown
+									assignee={newAssignee}
+									onSelectAssignee={setNewAssignee}
+									showLabelWhenEmpty={true}
+								/>
+
+								{/* Due Date with beautiful smooth popover */}
+								<SubtaskDatePickerDropdown
+									startDate={newStartDate}
+									dueDate={newDueDate}
+									onChange={(sDate, dDate) => {
+										setNewStartDate(sDate || '');
+										setNewDueDate(dDate || '');
+									}}
+									showLabelWhenEmpty={true}
+									emptyLabel="Due Date"
+								/>
+
+								{/* Choose Priority Dropdown */}
+								<SubtaskPriorityDropdown
+									priority={newPriority}
+									onChange={setNewPriority}
+									showLabelWhenEmpty={true}
+								/>
+							</div>
 						</div>
 					</div>
 				)}
@@ -1073,21 +2043,30 @@ const AttachmentsSection: React.FC<AttachmentsSectionProps> = ({
 									) : isPdf(att.type, att.name) ? (
 										<div
 											className="rounded bg-danger bg-opacity-10 text-danger d-flex align-items-center justify-content-center"
-											style={{ width: '40px', height: '40px' }}
+											style={{
+												width: '40px',
+												height: '40px'
+											}}
 										>
 											<i className="bi bi-file-earmark-pdf fs-4"></i>
 										</div>
 									) : isDoc(att.type, att.name) ? (
 										<div
 											className="rounded bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center"
-											style={{ width: '40px', height: '40px' }}
+											style={{
+												width: '40px',
+												height: '40px'
+											}}
 										>
 											<i className="bi bi-file-earmark-word fs-4"></i>
 										</div>
 									) : (
 										<div
 											className="rounded bg-secondary bg-opacity-10 text-secondary d-flex align-items-center justify-content-center"
-											style={{ width: '40px', height: '40px' }}
+											style={{
+												width: '40px',
+												height: '40px'
+											}}
 										>
 											<i className="bi bi-file-earmark fs-4"></i>
 										</div>
@@ -1105,7 +2084,8 @@ const AttachmentsSection: React.FC<AttachmentsSectionProps> = ({
 											{att.name}
 										</a>
 										<span className="text-muted fs-8">
-											{formatFileSize(att.size)} • Added {att.createdAt}
+											{formatFileSize(att.size)} • Added{' '}
+											{att.createdAt}
 										</span>
 									</div>
 								</div>
@@ -1122,7 +2102,9 @@ const AttachmentsSection: React.FC<AttachmentsSectionProps> = ({
 									<button
 										type="button"
 										className="btn btn-sm btn-light border-0 text-muted p-1"
-										onClick={() => handleDeleteAttachment(att.id)}
+										onClick={() =>
+											handleDeleteAttachment(att.id)
+										}
 										title="Delete attachment"
 									>
 										<i className="bi bi-trash fs-8"></i>
@@ -1138,36 +2120,557 @@ const AttachmentsSection: React.FC<AttachmentsSectionProps> = ({
 };
 
 // ==========================================
-// Subcomponent: SidebarActions
+// Subcomponent: ActivitySection
 // ==========================================
 
-interface SidebarActionsProps {
-	onAddSubtask: () => void;
-	onAttachClick: () => void;
+interface ActivitySectionProps {
+	comments: CardComment[];
+	activities: CardActivity[];
+	currentUser: Member;
+	onAddComment: (content: string) => void;
+	onReplyComment: (commentId: string, content: string) => void;
 }
 
-const SidebarActions: React.FC<SidebarActionsProps> = ({
-	onAddSubtask,
-	onAttachClick
+const ActivitySection: React.FC<ActivitySectionProps> = ({
+	comments,
+	activities,
+	currentUser,
+	onAddComment,
+	onReplyComment
 }) => {
+	const [newCommentText, setNewCommentText] = useState('');
+	const [isCommentInputOpen, setIsCommentInputOpen] = useState(false);
+	const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
+	const [replyText, setReplyText] = useState('');
+	const [activeFilter, setActiveFilter] = useState<
+		'all' | 'comments' | 'history'
+	>('all');
+
+	const handlePostComment = () => {
+		if (!newCommentText.trim()) return;
+		onAddComment(newCommentText.trim());
+		setNewCommentText('');
+		setIsCommentInputOpen(false);
+	};
+
+	const handlePostReply = (commentId: string) => {
+		if (!replyText.trim()) return;
+		onReplyComment(commentId, replyText.trim());
+		setReplyText('');
+		setActiveReplyId(null);
+	};
+
+	const totalCommentsCount = comments.reduce(
+		(sum, c) => sum + 1 + (c.replies ? c.replies.length : 0),
+		0
+	);
+
+	type TimelineItem =
+		| { kind: 'comment'; data: CardComment; timestamp: string }
+		| { kind: 'activity'; data: CardActivity; timestamp: string };
+
+	const timelineItems: TimelineItem[] = [];
+
+	if (activeFilter === 'all' || activeFilter === 'comments') {
+		comments.forEach(c => {
+			timelineItems.push({
+				kind: 'comment',
+				data: c,
+				timestamp: c.createdAt
+			});
+		});
+	}
+
+	if (activeFilter === 'all' || activeFilter === 'history') {
+		activities.forEach(a => {
+			timelineItems.push({
+				kind: 'activity',
+				data: a,
+				timestamp: a.timestamp
+			});
+		});
+	}
+
+	const getActivityIcon = (type: string) => {
+		switch (type) {
+		case 'subtask':
+			return 'bi-check2-square text-success';
+		case 'date':
+			return 'bi-calendar-event text-warning';
+		case 'attachment':
+			return 'bi-paperclip text-info';
+		case 'status':
+			return 'bi-kanban text-primary';
+		case 'member':
+			return 'bi-people text-secondary';
+		case 'title':
+			return 'bi-pencil text-secondary';
+		case 'comment':
+			return 'bi-chat-left-text text-primary';
+		default:
+			return 'bi-activity text-muted';
+		}
+	};
+
 	return (
-		<div className="col-md-3">
-			<h6 className="text-muted fs-8 fw-semibold mb-2">Add to card</h6>
-			<div className="d-flex flex-column gap-2">
-				<button
-					type="button"
-					className="btn btn-light btn-sm text-start"
-					onClick={onAddSubtask}
-				>
-					<i className="bi bi-check2-square me-2"></i> Subtask
-				</button>
-				<button
-					type="button"
-					className="btn btn-light btn-sm text-start"
-					onClick={onAttachClick}
-				>
-					<i className="bi bi-paperclip me-2"></i> Attachment
-				</button>
+		<div
+			className="activity-section h-100 d-flex flex-column"
+			style={{
+				width: '100%',
+				maxWidth: '100%',
+				minWidth: 0,
+				overflowX: 'hidden'
+			}}
+		>
+			{/* Activity Header & Filter */}
+			<div className="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom flex-wrap gap-2">
+				<div className="d-flex align-items-center gap-2">
+					<div
+						className="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center flex-shrink-0"
+						style={{ width: '28px', height: '28px' }}
+					>
+						<i className="bi bi-activity fs-7"></i>
+					</div>
+					<h6 className="m-0 fw-semibold text-dark">Activity</h6>
+				</div>
+
+				<div className="btn-group btn-group-sm flex-shrink-0" role="group">
+					<button
+						type="button"
+						className={`btn btn-sm py-0 px-2 fs-8 rounded-start-pill ${
+							activeFilter === 'all'
+								? 'btn-primary text-white fw-medium'
+								: 'btn-light border text-muted'
+						}`}
+						onClick={() => setActiveFilter('all')}
+					>
+						All
+					</button>
+					<button
+						type="button"
+						className={`btn btn-sm py-0 px-2 fs-8 ${
+							activeFilter === 'comments'
+								? 'btn-primary text-white fw-medium'
+								: 'btn-light border text-muted'
+						}`}
+						onClick={() => setActiveFilter('comments')}
+					>
+						Comments ({totalCommentsCount})
+					</button>
+					<button
+						type="button"
+						className={`btn btn-sm py-0 px-2 fs-8 rounded-end-pill ${
+							activeFilter === 'history'
+								? 'btn-primary text-white fw-medium'
+								: 'btn-light border text-muted'
+						}`}
+						onClick={() => setActiveFilter('history')}
+					>
+						History
+					</button>
+				</div>
+			</div>
+
+			{/* Add Comment Box */}
+			<div className="mb-3" style={{ minWidth: 0, maxWidth: '100%' }}>
+				<div className="d-flex gap-2 align-items-start">
+					<img
+						src={currentUser.avatar}
+						alt={currentUser.name}
+						className="rounded-circle flex-shrink-0"
+						style={{
+							width: '32px',
+							height: '32px',
+							objectFit: 'cover'
+						}}
+					/>
+					<div
+						className="flex-grow-1"
+						style={{ minWidth: 0, maxWidth: '100%' }}
+					>
+						<div
+							className={`border rounded-3 p-2 bg-white shadow-xs ${
+								isCommentInputOpen ? 'border-primary' : ''
+							}`}
+							style={{
+								transition: 'border-color 0.15s ease',
+								minWidth: 0,
+								maxWidth: '100%'
+							}}
+						>
+							<textarea
+								className="form-control border-0 p-1 shadow-none fs-7"
+								rows={isCommentInputOpen ? 3 : 1}
+								placeholder="Write a comment..."
+								value={newCommentText}
+								onChange={e =>
+									setNewCommentText(e.target.value)
+								}
+								onFocus={() => setIsCommentInputOpen(true)}
+								style={{
+									resize: 'none',
+									wordBreak: 'break-word',
+									overflowWrap: 'anywhere'
+								}}
+							/>
+							{isCommentInputOpen && (
+								<div className="d-flex align-items-center justify-content-between mt-2 pt-2 border-top flex-wrap gap-2">
+									<span className="text-muted fs-8">
+										Press Comment to post
+									</span>
+									<div className="d-flex gap-2">
+										<button
+											type="button"
+											className="btn btn-sm btn-light text-muted px-2 py-1 fs-8"
+											onClick={() => {
+												setIsCommentInputOpen(false);
+												setNewCommentText('');
+											}}
+										>
+											Cancel
+										</button>
+										<button
+											type="button"
+											className="btn btn-sm btn-primary px-3 py-1 fs-8 fw-medium"
+											disabled={!newCommentText.trim()}
+											onClick={handlePostComment}
+										>
+											Comment
+										</button>
+									</div>
+								</div>
+							)}
+						</div>
+					</div>
+				</div>
+			</div>
+
+			{/* Timeline Stream */}
+			<div
+				className="timeline-stream d-flex flex-column gap-3 pe-1 flex-grow-1"
+				style={{
+					maxHeight: '480px',
+					overflowY: 'auto',
+					overflowX: 'hidden',
+					scrollbarGutter: 'stable',
+					width: '100%',
+					maxWidth: '100%',
+					minWidth: 0
+				}}
+			>
+				{timelineItems.length === 0 ? (
+					<div className="text-center text-muted py-4 fs-8">
+						<i className="bi bi-chat-dots fs-3 d-block mb-1 text-muted opacity-50"></i>
+						No activity or comments yet.
+					</div>
+				) : (
+					timelineItems.map((item, index) => {
+						if (item.kind === 'comment') {
+							const comment = item.data;
+							const hasReplies =
+								comment.replies && comment.replies.length > 0;
+							return (
+								<div
+									key={comment.id || `com-${index}`}
+									className="comment-item d-flex gap-2 align-items-start"
+									style={{ minWidth: 0, maxWidth: '100%' }}
+								>
+									<img
+										src={comment.author.avatar}
+										alt={comment.author.name}
+										className="rounded-circle flex-shrink-0 mt-1"
+										style={{
+											width: '28px',
+											height: '28px',
+											objectFit: 'cover'
+										}}
+									/>
+									<div
+										className="flex-grow-1"
+										style={{
+											minWidth: 0,
+											maxWidth: '100%'
+										}}
+									>
+										<div
+											className="p-2 px-3 rounded-3 bg-light bg-opacity-75 border"
+											style={{
+												minWidth: 0,
+												maxWidth: '100%',
+												overflowWrap: 'anywhere',
+												wordBreak: 'break-word'
+											}}
+										>
+											<div className="d-flex align-items-center justify-content-between mb-1 gap-2">
+												<span
+													className="fw-semibold fs-8 text-dark text-truncate"
+													style={{ minWidth: 0 }}
+												>
+													{comment.author.name}
+												</span>
+												<span className="text-muted fs-8 flex-shrink-0">
+													{comment.createdAt}
+												</span>
+											</div>
+											<div
+												className="fs-7 text-dark"
+												style={{
+													whiteSpace: 'pre-wrap',
+													wordBreak: 'break-word',
+													overflowWrap: 'anywhere',
+													minWidth: 0,
+													maxWidth: '100%'
+												}}
+											>
+												{comment.content}
+											</div>
+										</div>
+
+										{/* Reply action button */}
+										<div className="d-flex align-items-center gap-2 mt-1 ps-1">
+											<button
+												type="button"
+												className="btn btn-sm btn-link text-decoration-none p-0 fs-8 text-primary fw-medium d-inline-flex align-items-center gap-1"
+												onClick={() =>
+													setActiveReplyId(prev =>
+														prev === comment.id
+															? null
+															: comment.id
+													)
+												}
+											>
+												<i className="bi bi-reply-fill"></i>
+												<span>Reply</span>
+											</button>
+										</div>
+
+										{/* Nested replies */}
+										{hasReplies && (
+											<div
+												className="border-start border-2 border-primary border-opacity-25 ps-2 ms-2 mt-2 d-flex flex-column gap-2"
+												style={{
+													minWidth: 0,
+													maxWidth: '100%'
+												}}
+											>
+												{comment.replies!.map(
+													(rep, rIdx) => (
+														<div
+															key={
+																rep.id ||
+																`rep-${rIdx}`
+															}
+															className="d-flex gap-2 align-items-start"
+															style={{
+																minWidth: 0,
+																maxWidth: '100%'
+															}}
+														>
+															<img
+																src={
+																	rep.author
+																		.avatar
+																}
+																alt={
+																	rep.author
+																		.name
+																}
+																className="rounded-circle flex-shrink-0 mt-1"
+																style={{
+																	width: '22px',
+																	height: '22px',
+																	objectFit:
+																		'cover'
+																}}
+															/>
+															<div
+																className="flex-grow-1 p-2 rounded-3 bg-light border"
+																style={{
+																	minWidth: 0,
+																	maxWidth:
+																		'100%',
+																	wordBreak:
+																		'break-word',
+																	overflowWrap:
+																		'anywhere'
+																}}
+															>
+																<div className="d-flex align-items-center justify-content-between mb-0.5 gap-2">
+																	<span
+																		className="fw-semibold fs-8 text-dark text-truncate"
+																		style={{
+																			minWidth: 0
+																		}}
+																	>
+																		{
+																			rep
+																				.author
+																				.name
+																		}
+																	</span>
+																	<span className="text-muted fs-8 flex-shrink-0">
+																		{
+																			rep.createdAt
+																		}
+																	</span>
+																</div>
+																<div
+																	className="fs-8 text-dark"
+																	style={{
+																		whiteSpace:
+																			'pre-wrap',
+																		wordBreak:
+																			'break-word',
+																		overflowWrap:
+																			'anywhere',
+																		minWidth: 0,
+																		maxWidth:
+																			'100%'
+																	}}
+																>
+																	{
+																		rep.content
+																	}
+																</div>
+															</div>
+														</div>
+													)
+												)}
+											</div>
+										)}
+
+										{/* Inline Reply Form */}
+										{activeReplyId === comment.id && (
+											<div
+												className="border-start border-2 border-primary ps-2 ms-2 mt-2"
+												style={{
+													minWidth: 0,
+													maxWidth: '100%'
+												}}
+											>
+												<div className="d-flex gap-2 align-items-start">
+													<img
+														src={currentUser.avatar}
+														alt={currentUser.name}
+														className="rounded-circle flex-shrink-0 mt-1"
+														style={{
+															width: '22px',
+															height: '22px',
+															objectFit: 'cover'
+														}}
+													/>
+													<div
+														className="flex-grow-1"
+														style={{
+															minWidth: 0,
+															maxWidth: '100%'
+														}}
+													>
+														<textarea
+															className="form-control form-control-sm shadow-none fs-8"
+															rows={2}
+															placeholder={`Reply to ${comment.author.name}...`}
+															value={replyText}
+															onChange={e =>
+																setReplyText(
+																	e.target
+																		.value
+																)
+															}
+															autoFocus
+															style={{
+																resize: 'none',
+																wordBreak:
+																	'break-word',
+																overflowWrap:
+																	'anywhere'
+															}}
+														/>
+														<div className="d-flex gap-2 justify-content-end mt-2">
+															<button
+																type="button"
+																className="btn btn-sm btn-light py-0 px-2 fs-8"
+																onClick={() => {
+																	setActiveReplyId(
+																		null
+																	);
+																	setReplyText(
+																		''
+																	);
+																}}
+															>
+																Cancel
+															</button>
+															<button
+																type="button"
+																className="btn btn-sm btn-primary py-0 px-2 fs-8 fw-medium"
+																disabled={
+																	!replyText.trim()
+																}
+																onClick={() =>
+																	handlePostReply(
+																		comment.id
+																	)
+																}
+															>
+																Reply
+															</button>
+														</div>
+													</div>
+												</div>
+											</div>
+										)}
+									</div>
+								</div>
+							);
+						} else {
+							const activity = item.data;
+							const iconClass = getActivityIcon(activity.type);
+							return (
+								<div
+									key={activity.id || `act-${index}`}
+									className="activity-item d-flex align-items-start gap-2 fs-8"
+									style={{ minWidth: 0, maxWidth: '100%' }}
+								>
+									<div
+										className="rounded-circle bg-light border d-flex align-items-center justify-content-center flex-shrink-0 mt-0.5"
+										style={{
+											width: '26px',
+											height: '26px'
+										}}
+									>
+										<i className={`bi ${iconClass}`}></i>
+									</div>
+									<div
+										className="flex-grow-1"
+										style={{
+											minWidth: 0,
+											maxWidth: '100%'
+										}}
+									>
+										<div
+											style={{
+												wordBreak: 'break-word',
+												overflowWrap: 'anywhere',
+												minWidth: 0
+											}}
+										>
+											<span className="fw-semibold text-dark">
+												{activity.user.name}
+											</span>{' '}
+											<span className="text-secondary">
+												{activity.text}
+											</span>
+										</div>
+										<div className="text-muted fs-8 mt-0.5">
+											{activity.timestamp}
+										</div>
+									</div>
+								</div>
+							);
+						}
+					})
+				)}
 			</div>
 		</div>
 	);
@@ -1184,13 +2687,68 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
 	isOpen,
 	onClose,
 	onSave,
-	onMoveCard
+	onMoveCard,
+	onConvertSubtaskToCard
 }) => {
+	const dispatch = useDispatch();
 	const [isEditingTitle, setIsEditingTitle] = useState(false);
 	const [isAddingSubtask, setIsAddingSubtask] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-	const { formData, updateField, toggleMember } = useCardForm(card, isOpen);
+	const {
+		formData,
+		updateField,
+		toggleMember,
+		logActivity,
+		addComment,
+		replyComment
+	} = useCardForm(card, isOpen);
+
+	const totalComments = formData.comments.reduce(
+		(sum, c) => sum + 1 + (c.replies ? c.replies.length : 0),
+		0
+	);
+
+	const handleConvertSubtaskToCard = (subtask: SubTask) => {
+		const targetColId =
+			currentColumnId ||
+			(columns && columns.length > 0 ? columns[0].id : '');
+
+		if (onConvertSubtaskToCard) {
+			onConvertSubtaskToCard(subtask);
+		} else if (targetColId) {
+			dispatch(addCard(targetColId, subtask.title));
+		}
+
+		const updatedSubtasks = formData.subtasks.filter(
+			st => st.id !== subtask.id
+		);
+		updateField('subtasks', updatedSubtasks);
+
+		const completedSubtasks = updatedSubtasks.filter(
+			st => st.completed
+		).length;
+		onSave({
+			title: formData.title.trim() || card.title,
+			description: formData.description,
+			startDate: formData.startDate,
+			endDate: formData.endDate,
+			members: formData.members,
+			subtasks: updatedSubtasks,
+			attachments: formData.attachments,
+			attachmentsCount: formData.attachments.length,
+			comments: formData.comments,
+			activities: formData.activities,
+			commentsCount: totalComments,
+			checklist:
+				updatedSubtasks.length > 0
+					? {
+						total: updatedSubtasks.length,
+						completed: completedSubtasks
+					}
+					: undefined
+		});
+	};
 
 	// Close on Escape when modal is open and not editing title
 	useEffect(() => {
@@ -1206,7 +2764,9 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
 	if (!isOpen) return null;
 
 	const handleSave = () => {
-		const completedSubtasks = formData.subtasks.filter(st => st.completed).length;
+		const completedSubtasks = formData.subtasks.filter(
+			st => st.completed
+		).length;
 		onSave({
 			title: formData.title.trim() || card.title,
 			description: formData.description,
@@ -1216,16 +2776,29 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
 			subtasks: formData.subtasks,
 			attachments: formData.attachments,
 			attachmentsCount: formData.attachments.length,
-			checklist: formData.subtasks.length > 0
-				? { total: formData.subtasks.length, completed: completedSubtasks }
-				: undefined
+			comments: formData.comments,
+			activities: formData.activities,
+			commentsCount: totalComments,
+			checklist:
+				formData.subtasks.length > 0
+					? {
+						total: formData.subtasks.length,
+						completed: completedSubtasks
+					}
+					: undefined
 		});
 		onClose();
 	};
 
 	const handleStatusChange = (newColumnId: string) => {
 		if (newColumnId !== currentColumnId && onMoveCard) {
-			const completedSubtasks = formData.subtasks.filter(st => st.completed).length;
+			const targetCol = columns.find(c => c.id === newColumnId);
+			if (targetCol) {
+				logActivity('status', `moved card to "${targetCol.title}"`);
+			}
+			const completedSubtasks = formData.subtasks.filter(
+				st => st.completed
+			).length;
 			onMoveCard(
 				{
 					...card,
@@ -1237,9 +2810,16 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
 					subtasks: formData.subtasks,
 					attachments: formData.attachments,
 					attachmentsCount: formData.attachments.length,
-					checklist: formData.subtasks.length > 0
-						? { total: formData.subtasks.length, completed: completedSubtasks }
-						: undefined
+					comments: formData.comments,
+					activities: formData.activities,
+					commentsCount: totalComments,
+					checklist:
+						formData.subtasks.length > 0
+							? {
+								total: formData.subtasks.length,
+								completed: completedSubtasks
+							}
+							: undefined
 				},
 				newColumnId
 			);
@@ -1263,9 +2843,13 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
 					day: 'numeric'
 				})
 			});
+			logActivity('attachment', `attached file "${file.name}"`);
 		});
 
-		updateField('attachments', [...formData.attachments, ...newAttachments]);
+		updateField('attachments', [
+			...formData.attachments,
+			...newAttachments
+		]);
 		if (fileInputRef.current) {
 			fileInputRef.current.value = '';
 		}
@@ -1297,10 +2881,16 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
 				aria-modal="true"
 				style={{ zIndex: 1055 }}
 			>
-				<div className="modal-dialog modal-lg modal-dialog-centered">
-					<div className="modal-content border-0 shadow">
+				<div
+					className="modal-dialog modal-xl modal-dialog-centered"
+					style={{ maxWidth: '1080px', width: '95%' }}
+				>
+					<div
+						className="modal-content border-0 shadow-lg"
+						style={{ borderRadius: '16px', maxHeight: '92vh' }}
+					>
 						{/* Header */}
-						<div className="modal-header border-0 pb-0 pt-3 px-4 flex-column align-items-stretch">
+						<div className="modal-header border-0 pb-0 pt-4 px-4 px-md-5 flex-column align-items-stretch">
 							<div className="d-flex align-items-center justify-content-between mb-2">
 								<StatusDropdownMenu
 									columns={columns}
@@ -1322,16 +2912,25 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
 									<AutoResizeTitleTextarea
 										value={formData.title}
 										fallbackTitle={card.title}
-										onChange={val =>
-											updateField('title', val)
-										}
+										onChange={val => {
+											updateField('title', val);
+											if (
+												val.trim() &&
+												val.trim() !== card.title
+											) {
+												logActivity(
+													'title',
+													`changed card title to "${val.trim()}"`
+												);
+											}
+										}}
 										onFinish={() =>
 											setIsEditingTitle(false)
 										}
 									/>
 								) : (
 									<div
-										className="fw-bold fs-5 px-2 py-1 rounded cursor-pointer flex-grow-1 text-truncate"
+										className="fw-bold fs-5 px-2 py-1 rounded cursor-pointer flex-grow-1"
 										onClick={() => setIsEditingTitle(true)}
 										title="Click to edit title"
 										role="button"
@@ -1342,7 +2941,10 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
 										}}
 										style={{
 											minHeight: '34px',
-											lineHeight: '1.4'
+											lineHeight: '1.4',
+											wordBreak: 'break-word',
+											overflowWrap: 'anywhere',
+											minWidth: 0
 										}}
 									>
 										{formData.title || card.title}
@@ -1364,73 +2966,133 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
 						</div>
 
 						{/* Body */}
-						<div className="modal-body pt-3">
-							<div className="row">
-								<div className="col-md-9">
-									<div className="d-flex flex-wrap gap-4 mb-4 align-items-start">
-										<MembersSection
-											selectedMembers={formData.members}
-											onToggleMember={toggleMember}
-										/>
-										<DatesSection
-											startDate={formData.startDate}
-											endDate={formData.endDate}
-											onChangeStartDate={val =>
-												updateField('startDate', val)
-											}
-											onChangeEndDate={val =>
-												updateField('endDate', val)
-											}
-										/>
-									</div>
-
-									<RichDescriptionEditor
-										description={formData.description}
-										onDescriptionChange={val =>
-											updateField('description', val)
-										}
+						<div
+							className="modal-body pt-3 pb-4 px-4 px-md-5"
+							style={{
+								maxHeight: 'calc(92vh - 140px)',
+								overflowY: 'auto',
+								overflowX: 'hidden',
+								scrollbarGutter: 'stable'
+							}}
+						>
+							<div
+								className="w-100"
+								style={{ maxWidth: '100%', minWidth: 0 }}
+							>
+								{/* Members & Dates */}
+								<div className="d-flex flex-wrap gap-4 mb-4 align-items-start">
+									<MembersSection
+										selectedMembers={formData.members}
+										onToggleMember={m => {
+											toggleMember(m);
+											const exists =
+												formData.members.some(
+													sm => sm.id === m.id
+												);
+											logActivity(
+												'member',
+												`${exists ? 'unassigned' : 'assigned'} member ${m.name}`
+											);
+										}}
 									/>
-
-									{/* Subtasks Section */}
-									<SubtasksSection
-										subtasks={formData.subtasks}
-										onUpdateSubtasks={sts =>
-											updateField('subtasks', sts)
-										}
-										isAddingSubtask={isAddingSubtask}
-										setIsAddingSubtask={setIsAddingSubtask}
-									/>
-
-									{/* Attachments Section */}
-									<AttachmentsSection
-										attachments={formData.attachments}
-										onUpdateAttachments={atts =>
-											updateField('attachments', atts)
-										}
-										fileInputRef={fileInputRef}
-										onFileUpload={handleFileUpload}
+									<DatesSection
+										startDate={formData.startDate}
+										endDate={formData.endDate}
+										onChangeStartDate={val => {
+											updateField('startDate', val);
+											logActivity(
+												'date',
+												val
+													? `updated card start date to ${formatDateDisplay(val)}`
+													: 'cleared card start date'
+											);
+										}}
+										onChangeEndDate={val => {
+											updateField('endDate', val);
+											logActivity(
+												'date',
+												val
+													? `updated card due date to ${formatDateDisplay(val)}`
+													: 'cleared card due date'
+											);
+										}}
 									/>
 								</div>
 
-								<SidebarActions
-									onAddSubtask={() => setIsAddingSubtask(true)}
-									onAttachClick={() => fileInputRef.current?.click()}
+								{/* Description Section */}
+								<RichDescriptionEditor
+									description={formData.description}
+									onDescriptionChange={val => {
+										updateField('description', val);
+										logActivity(
+											'general',
+											'updated card description'
+										);
+									}}
 								/>
+
+								{/* Subtasks Section */}
+								<SubtasksSection
+									subtasks={formData.subtasks}
+									onUpdateSubtasks={sts =>
+										updateField('subtasks', sts)
+									}
+									isAddingSubtask={isAddingSubtask}
+									setIsAddingSubtask={setIsAddingSubtask}
+									onConvertToCard={
+										handleConvertSubtaskToCard
+									}
+									onLogActivity={logActivity}
+								/>
+
+								{/* Attachments Section */}
+								<AttachmentsSection
+									attachments={formData.attachments}
+									onUpdateAttachments={atts => {
+										const removed =
+											formData.attachments.find(
+												fa =>
+													!atts.some(
+														a => a.id === fa.id
+													)
+											);
+										if (removed) {
+											logActivity(
+												'attachment',
+												`removed attachment "${removed.name}"`
+											);
+										}
+										updateField('attachments', atts);
+									}}
+									fileInputRef={fileInputRef}
+									onFileUpload={handleFileUpload}
+								/>
+
+								{/* Activity Section (positioned below Attachments) */}
+								<div className="border-top pt-4 mt-4">
+									<ActivitySection
+										comments={formData.comments}
+										activities={formData.activities}
+										currentUser={MOCK_MEMBERS[0]}
+										onAddComment={addComment}
+										onReplyComment={replyComment}
+									/>
+								</div>
 							</div>
 						</div>
 
 						{/* Footer */}
-						<div className="modal-footer border-0">
+						<div className="modal-footer border-top bg-light py-2 px-4 px-md-5 rounded-bottom-4">
 							<button
 								type="button"
-								className="btn btn-secondary me-2"
+								className="btn btn-sm btn-light border me-2"
 								onClick={onClose}
 							>
 								Cancel
 							</button>
 							<button
 								type="button"
-								className="btn btn-primary"
+								className="btn btn-sm btn-primary px-3 fw-medium"
 								onClick={handleSave}
 							>
 								Save Changes

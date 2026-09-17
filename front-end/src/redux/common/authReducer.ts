@@ -29,7 +29,10 @@ export const authReducer = (
 	switch (action.type) {
 		case LOGIN: {
 			try {
-				localStorage.setItem('trello_auth_user', JSON.stringify(action.payload));
+				localStorage.setItem(
+					'trello_auth_user',
+					JSON.stringify(action.payload)
+				);
 			} catch (e) {
 				console.error('Failed to save auth user to localStorage', e);
 			}
@@ -43,7 +46,10 @@ export const authReducer = (
 			try {
 				localStorage.removeItem('trello_auth_user');
 			} catch (e) {
-				console.error('Failed to remove auth user from localStorage', e);
+				console.error(
+					'Failed to remove auth user from localStorage',
+					e
+				);
 			}
 			return {
 				...state,

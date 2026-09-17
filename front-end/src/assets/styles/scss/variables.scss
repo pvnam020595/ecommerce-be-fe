@@ -413,7 +413,10 @@ $ds-elevation-surface-current: #ffffff;
 $font-family:
 	-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
 	'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-$font-size: 14px;
+$font-size: 10px;
+$font-size-mobile: 1.4rem;
+$font-size-tablet: 1.5rem;
+$font-size-desktop: 1.6rem;
 $line-height: 1.5;
 $text-color: $ds-text;
 $background-color: $ds-surface;

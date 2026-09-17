@@ -1,21 +1,74 @@
 html,
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+  height: 100%;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   font-size: 10px;
+  line-height: 1.5;
+  color: #172b4d;
+  background-color: #ffffff;
 }
 
 .trello-app {
   background-color: #ffffff;
   color: #172b4d;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+  font-size: var(--app-font-size);
+}
+@media (max-width: 767.98px) {
+  .trello-app {
+    font-size: 1.4rem;
+  }
+}
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .trello-app {
+    font-size: 1.5rem;
+  }
+}
+@media (min-width: 992px) {
+  .trello-app {
+    font-size: 1.6rem;
+  }
 }
 
 .fs-7 {
-  font-size: 1.5rem;
+  font-size: var(--font-size-fs7, 1.35rem);
+}
+@media (max-width: 767.98px) {
+  .fs-7 {
+    font-size: 1.35rem;
+  }
+}
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .fs-7 {
+    font-size: 1.45rem;
+  }
+}
+@media (min-width: 992px) {
+  .fs-7 {
+    font-size: 1.55rem;
+  }
 }
 
 .fs-8 {
-  font-size: 1.4rem;
+  font-size: var(--font-size-fs8, 1.25rem);
+}
+@media (max-width: 767.98px) {
+  .fs-8 {
+    font-size: 1.25rem;
+  }
+}
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .fs-8 {
+    font-size: 1.35rem;
+  }
+}
+@media (min-width: 992px) {
+  .fs-8 {
+    font-size: 1.4rem;
+  }
 }
 
 .cursor-pointer {
@@ -47,7 +100,7 @@ body {
   margin: 0 0.8rem;
 }
 .trello-navbar .nav-link {
-  font-size: 1.4rem;
+  font-size: var(--app-font-size);
   font-weight: 500;
   color: #44546f;
   padding: 0.6rem 1.2rem;
@@ -157,7 +210,7 @@ body {
   margin-top: 0.4rem;
 }
 .trello-navbar .trello-profile-dropdown .dropdown-item {
-  font-size: 1.4rem;
+  font-size: var(--app-font-size);
   padding: 0.8rem 1.6rem;
   color: #172b4d;
 }
@@ -183,7 +236,7 @@ body {
   background-color: #ffffff;
 }
 .trello-sidebar .nav-link {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 500;
   color: #172b4d;
 }

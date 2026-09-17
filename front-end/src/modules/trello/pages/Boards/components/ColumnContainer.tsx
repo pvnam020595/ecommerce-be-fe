@@ -22,6 +22,7 @@ interface ColumnContainerProps {
 	onEditColumn: (columnId: string, title: string) => void;
 	onDeleteColumn: (columnId: string) => void;
 	onMoveCard?: (card: Card, targetColumnId: string) => void;
+	disableDrag?: boolean;
 }
 
 export const ColumnContainer = ({
@@ -32,7 +33,8 @@ export const ColumnContainer = ({
 	onDeleteCard,
 	onEditColumn,
 	onDeleteColumn,
-	onMoveCard
+	onMoveCard,
+	disableDrag = false
 }: ColumnContainerProps) => {
 	const [isAdding, setIsAdding] = useState(false);
 	const [newCardTitle, setNewCardTitle] = useState('');
@@ -53,7 +55,7 @@ export const ColumnContainer = ({
 			type: 'column',
 			column
 		},
-		disabled: isEditingTitle
+		disabled: disableDrag || isEditingTitle
 	});
 
 	const { setNodeRef: setDroppableNodeRef } = useDroppable({
@@ -124,35 +126,55 @@ export const ColumnContainer = ({
 				) : (
 					<h6
 						className="fw-bold m-0 fs-7 text-truncate flex-grow-1 column-drag-handle"
-						{...attributes}
-						{...listeners}
-						style={{ cursor: 'pointer' }}
+						{...(disableDrag ? {} : attributes)}
+						{...(disableDrag ? {} : listeners)}
+						style={{ cursor: disableDrag ? 'pointer' : 'grab' }}
 						onClick={() => setIsEditingTitle(true)}
 					>
 						{column.title}
 					</h6>
 				)}
-				<div className="dropdown ms-2">
+				<div className="dropdown ms-2 position-relative">
 					<button
-						className="btn btn-sm p-0 border-0 text-muted"
+						className={`btn btn-sm p-0 border-0 ${showMenu ? 'text-dark' : 'text-muted'} rounded-circle d-flex align-items-center justify-content-center`}
+						style={{ width: '28px', height: '28px' }}
 						onClick={() => setShowMenu(!showMenu)}
+						title="Column actions"
 					>
-						<i className="bi bi-three-dots"></i>
+						<i className="bi bi-three-dots-vertical fs-6"></i>
 					</button>
 					{showMenu && (
 						<ul
-							className="dropdown-menu show position-absolute end-0"
-							style={{ zIndex: 1000 }}
+							className="dropdown-menu show shadow-lg border-0 py-2 position-absolute end-0"
+							style={{
+								zIndex: 1050,
+								minWidth: '200px',
+								borderRadius: '12px',
+								boxShadow:
+									'0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.08)'
+							}}
 						>
+							<li className="px-3 py-1 border-bottom mb-1">
+								<span
+									className="text-uppercase text-muted fw-bold"
+									style={{
+										fontSize: '0.7rem',
+										letterSpacing: '0.5px'
+									}}
+								>
+									Column Options
+								</span>
+							</li>
 							<li>
 								<button
-									className="dropdown-item text-danger d-flex align-items-center gap-2"
+									className="dropdown-item text-danger d-flex align-items-center gap-2 px-3 py-2 fs-7 rounded-2 mx-1"
+									style={{ width: 'calc(100% - 8px)' }}
 									onClick={() => {
 										onDeleteColumn(column.id);
 										setShowMenu(false);
 									}}
 								>
-									<i className="bi bi-trash"></i> Delete
+									<i className="bi bi-trash3"></i> Delete
 									Column
 								</button>
 							</li>
@@ -181,6 +203,7 @@ export const ColumnContainer = ({
 							}
 							onDelete={cardId => onDeleteCard(column.id, cardId)}
 							onMoveCard={onMoveCard}
+							disableDrag={disableDrag}
 						/>
 					))}
 				</SortableContext>

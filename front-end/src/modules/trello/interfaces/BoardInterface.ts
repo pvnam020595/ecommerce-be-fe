@@ -18,6 +18,7 @@ export interface SubTask {
 	assignee?: Member;
 	startDate?: string;
 	dueDate?: string;
+	priority?: 'low' | 'medium' | 'high' | 'urgent';
 }
 
 export interface Attachment {
@@ -27,6 +28,37 @@ export interface Attachment {
 	type: string; // e.g. 'image/png', 'application/pdf', etc.
 	url: string;
 	createdAt: string;
+}
+
+export interface CardCommentReply {
+	id: string;
+	author: Member;
+	content: string;
+	createdAt: string;
+}
+
+export interface CardComment {
+	id: string;
+	author: Member;
+	content: string;
+	createdAt: string;
+	replies?: CardCommentReply[];
+}
+
+export interface CardActivity {
+	id: string;
+	type:
+		| 'status'
+		| 'subtask'
+		| 'date'
+		| 'member'
+		| 'attachment'
+		| 'title'
+		| 'comment'
+		| 'general';
+	user: Member;
+	text: string;
+	timestamp: string;
 }
 
 export interface Card {
@@ -42,6 +74,8 @@ export interface Card {
 	checklist?: { total: number; completed: number };
 	subtasks?: SubTask[];
 	attachments?: Attachment[];
+	comments?: CardComment[];
+	activities?: CardActivity[];
 }
 
 export interface Column {

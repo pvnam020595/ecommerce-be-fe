@@ -1,13 +1,35 @@
-body,
-html {
-  margin: 0;
-  padding: 0;
+html,
+body {
+  height: 100%;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   font-size: 10px;
+  line-height: 1.5;
+  color: #172b4d;
+  background-color: #ffffff;
 }
 
 .page-login {
   width: 100%;
   height: 100%;
+  font-size: var(--app-font-size);
+}
+@media (max-width: 767.98px) {
+  .page-login {
+    font-size: 1.4rem;
+  }
+}
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .page-login {
+    font-size: 1.5rem;
+  }
+}
+@media (min-width: 992px) {
+  .page-login {
+    font-size: 1.6rem;
+  }
 }
 .page-login img {
   height: 2.4rem;

@@ -11,6 +11,7 @@ interface CardItemProps {
 	onEdit: (cardId: string, updates: Partial<Card>) => void;
 	onDelete: (cardId: string) => void;
 	onMoveCard?: (card: Card, targetColumnId: string) => void;
+	disableDrag?: boolean;
 }
 
 export const CardItem = ({
@@ -19,7 +20,8 @@ export const CardItem = ({
 	columns,
 	onEdit,
 	onDelete,
-	onMoveCard
+	onMoveCard,
+	disableDrag = false
 }: CardItemProps) => {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -35,7 +37,8 @@ export const CardItem = ({
 		data: {
 			type: 'card',
 			card
-		}
+		},
+		disabled: disableDrag
 	});
 
 	const style = {
@@ -45,12 +48,66 @@ export const CardItem = ({
 	};
 
 	const hasLabels = card.labels && card.labels.length > 0;
-	const totalSubtasks = card.subtasks ? card.subtasks.length : (card.checklist ? card.checklist.total : 0);
-	const completedSubtasks = card.subtasks ? card.subtasks.filter(st => st.completed).length : (card.checklist ? card.checklist.completed : 0);
+	const totalSubtasks = card.subtasks
+		? card.subtasks.length
+		: card.checklist
+			? card.checklist.total
+			: 0;
+	const completedSubtasks = card.subtasks
+		? card.subtasks.filter(st => st.completed).length
+		: card.checklist
+			? card.checklist.completed
+			: 0;
 	const hasChecklist = totalSubtasks > 0;
-	const totalAttachments = (card.attachments ? card.attachments.length : 0) || card.attachmentsCount || 0;
+	const totalAttachments =
+		(card.attachments ? card.attachments.length : 0) ||
+		card.attachmentsCount ||
+		0;
 	const hasAttachments = totalAttachments > 0;
-	const hasComments = Boolean(card.commentsCount && card.commentsCount > 0);
+	const countComments = (c: Card): number => {
+		if (c.comments) {
+			return c.comments.reduce(
+				(total, com) =>
+					total + 1 + (com.replies ? com.replies.length : 0),
+				0
+			);
+		}
+		return c.commentsCount || 0;
+	};
+
+	const formatDateDisplay = (dateStr?: string): string => {
+		if (!dateStr) return '';
+		try {
+			const parts = dateStr.split('-');
+			if (parts.length === 3) {
+				const months = [
+					'Jan',
+					'Feb',
+					'Mar',
+					'Apr',
+					'May',
+					'Jun',
+					'Jul',
+					'Aug',
+					'Sep',
+					'Oct',
+					'Nov',
+					'Dec'
+				];
+				const monthIdx = parseInt(parts[1], 10) - 1;
+				const day = parseInt(parts[2], 10);
+				if (monthIdx >= 0 && monthIdx < 12) {
+					return `${months[monthIdx]} ${day}`;
+				}
+			}
+		} catch (err) {
+			void err;
+		}
+		return dateStr.slice(5);
+	};
+
+	const displayCommentsCount = countComments(card);
+	const hasComments = displayCommentsCount > 0;
 	const hasDates = Boolean(card.startDate || card.endDate);
 	const hasMembers = Boolean(card.members && card.members.length > 0);
 	const hasBottomRow =
@@ -66,8 +123,8 @@ export const CardItem = ({
 			<div
 				ref={setNodeRef}
 				style={style}
-				{...attributes}
-				{...listeners}
+				{...(disableDrag ? {} : attributes)}
+				{...(disableDrag ? {} : listeners)}
 				className="card-item bg-white rounded-3 shadow-sm p-3 mb-2 cursor-pointer position-relative group-hover"
 				onClick={() => setIsModalOpen(true)}
 			>
@@ -105,10 +162,31 @@ export const CardItem = ({
 							{/* Due Date Indicator */}
 							{hasDates && (
 								<div className="card-meta-item d-flex align-items-center gap-1 badge bg-light text-secondary border fw-normal py-1 px-2 rounded">
-									<i className="bi bi-clock"></i>
-									<span>
-										{card.startDate ? card.startDate.slice(5) : ''}
-										{card.endDate ? ` - ${card.endDate.slice(5)}` : ''}
+									<i className="bi bi-calendar3 text-primary"></i>
+									<span className="d-inline-flex align-items-center">
+										{card.startDate && (
+											<span>
+												{formatDateDisplay(
+													card.startDate
+												)}
+											</span>
+										)}
+										{card.startDate && card.endDate && (
+											<i
+												className="bi bi-arrow-right-short mx-0.5 text-muted align-middle"
+												style={{
+													fontSize: '1.1rem',
+													lineHeight: 1
+												}}
+											></i>
+										)}
+										{card.endDate && (
+											<span>
+												{formatDateDisplay(
+													card.endDate
+												)}
+											</span>
+										)}
 									</span>
 								</div>
 							)}
@@ -144,10 +222,10 @@ export const CardItem = ({
 							{hasComments && (
 								<div
 									className="card-meta-item d-flex align-items-center gap-1"
-									title={`${card.commentsCount} comments`}
+									title={`${displayCommentsCount} comments`}
 								>
 									<i className="bi bi-chat-left-text"></i>
-									<span>{card.commentsCount}</span>
+									<span>{displayCommentsCount}</span>
 								</div>
 							)}
 

@@ -1,5 +1,27 @@
+/* ==========================================================================
+   TRELLO BOARD STYLES
+   Architecture: BEM-inspired modular structure, tokenized design variables,
+                 GPU-accelerated drag-and-drop feedback, high-DPI scrollbars,
+                 accessibility & reduced-motion support.
+   ========================================================================== */
 .trello-board-wrapper {
   background-color: #eef2f6;
+  font-size: var(--app-font-size, 1.6rem);
+}
+@media (max-width: 767.98px) {
+  .trello-board-wrapper {
+    font-size: 1.4rem;
+  }
+}
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .trello-board-wrapper {
+    font-size: 1.5rem;
+  }
+}
+@media (min-width: 992px) {
+  .trello-board-wrapper {
+    font-size: 1.6rem;
+  }
 }
 
 .board-container {
@@ -20,7 +42,7 @@
   }
 }
 .board-header .board-header-title {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 600;
   color: #172b4d;
   line-height: 2rem;
@@ -28,21 +50,31 @@
 }
 @media (min-width: 768px) {
   .board-header .board-header-title {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
     line-height: 2.2rem;
   }
 }
 .board-header .btn-board-star {
   width: 2.6rem;
   height: 2.6rem;
-  background-color: rgba(9, 30, 66, 0.06);
+  background-color: rgba(9, 30, 66, 0.0588235294);
   border: none;
   border-radius: 0.6rem;
   color: #44546f;
-  transition: background-color 0.15s ease;
+  transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .board-header .btn-board-star {
+    transition: none;
+  }
 }
 .board-header .btn-board-star:hover {
-  background-color: rgba(9, 30, 66, 0.12);
+  background-color: rgba(9, 30, 66, 0.1411764706);
+  color: #172b4d;
+}
+.board-header .btn-board-star:focus-visible {
+  outline: 0.2rem solid #4f46e5;
+  outline-offset: 0.1rem;
 }
 .board-header .board-header-divider {
   width: 0.1rem;
@@ -51,19 +83,28 @@
 }
 .board-header .btn-board-visibility {
   height: 2.7rem;
-  background-color: rgba(9, 30, 66, 0.06);
+  background-color: rgba(9, 30, 66, 0.0588235294);
   border: none;
   border-radius: 0.6rem;
   padding: 0.6rem 1rem;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   font-weight: 500;
   color: #44546f;
   line-height: 1.5rem;
-  transition: background-color 0.15s ease;
+  transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .board-header .btn-board-visibility {
+    transition: none;
+  }
 }
 .board-header .btn-board-visibility:hover {
-  background-color: rgba(9, 30, 66, 0.12);
+  background-color: rgba(9, 30, 66, 0.1411764706);
   color: #172b4d;
+}
+.board-header .btn-board-visibility:focus-visible {
+  outline: 0.2rem solid #4f46e5;
+  outline-offset: 0.1rem;
 }
 .board-header .board-header-members {
   position: relative;
@@ -76,15 +117,25 @@
   border: 0.15rem solid #ffffff;
   object-fit: cover;
   margin-left: -0.6rem;
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .board-header .board-header-members .member-avatar {
+    transition: none;
+  }
 }
 .board-header .board-header-members .member-avatar:first-child {
   margin-left: 0;
+}
+.board-header .board-header-members .member-avatar:hover {
+  transform: scale(1.1);
+  z-index: 2;
 }
 .board-header .board-header-members .member-avatar-initials {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 1.4rem;
   font-weight: 600;
   color: #ffffff;
   line-height: 1;
@@ -99,24 +150,38 @@
   background-color: #4f46e5;
   color: #ffffff;
   border: 0.15rem solid #ffffff;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .board-header .board-header-members .member-add-btn {
+    transition: none;
+  }
 }
 .board-header .board-header-members .member-add-btn:hover {
   background-color: #4338ca;
 }
+.board-header .board-header-members .member-add-btn:focus-visible {
+  outline: 0.2rem solid #4f46e5;
+  outline-offset: 0.1rem;
+}
 .board-header .btn-board-action-btn {
   height: 3.1rem;
-  background-color: rgba(9, 30, 66, 0.06);
+  background-color: rgba(9, 30, 66, 0.0588235294);
   border: none;
   border-radius: 0.6rem;
   padding: 0.6rem 1rem;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   font-weight: 500;
   color: #44546f;
   line-height: 1.5rem;
-  transition: all 0.15s ease;
+  transition: background-color, color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .board-header .btn-board-action-btn {
+    transition: none;
+  }
 }
 @media (min-width: 768px) {
   .board-header .btn-board-action-btn {
@@ -124,8 +189,12 @@
   }
 }
 .board-header .btn-board-action-btn:hover {
-  background-color: rgba(9, 30, 66, 0.12);
+  background-color: rgba(9, 30, 66, 0.1411764706);
   color: #172b4d;
+}
+.board-header .btn-board-action-btn:focus-visible {
+  outline: 0.2rem solid #4f46e5;
+  outline-offset: 0.1rem;
 }
 
 .board-content {
@@ -136,6 +205,23 @@
   background-color: #eef2f6;
   padding: 1.2rem;
   gap: 1.2rem;
+  scrollbar-width: thin;
+  scrollbar-color: #bfc4ce rgba(9, 30, 66, 0.0588235294);
+}
+.board-content::-webkit-scrollbar {
+  width: 1rem;
+  height: 1rem;
+}
+.board-content::-webkit-scrollbar-track {
+  background: rgba(9, 30, 66, 0.0588235294);
+  border-radius: 0.6rem;
+}
+.board-content::-webkit-scrollbar-thumb {
+  background: #bfc4ce;
+  border-radius: 0.6rem;
+}
+.board-content::-webkit-scrollbar-thumb:hover {
+  background: #97a0af;
 }
 @media (min-width: 768px) {
   .board-content {
@@ -147,20 +233,6 @@
   .board-content {
     padding: 2.4rem;
   }
-}
-.board-content::-webkit-scrollbar {
-  height: 1rem;
-}
-.board-content::-webkit-scrollbar-track {
-  background: rgba(9, 30, 66, 0.06);
-  border-radius: 0.6rem;
-}
-.board-content::-webkit-scrollbar-thumb {
-  background: #bfc4ce;
-  border-radius: 0.6rem;
-}
-.board-content::-webkit-scrollbar-thumb:hover {
-  background: #97a0af;
 }
 
 .board-column {
@@ -186,23 +258,33 @@
   font-weight: 600;
   color: #172b4d;
   max-width: 20rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .board-column .column-cards {
   min-height: 2rem;
   padding: 0.6rem 1.2rem;
+  scrollbar-width: thin;
+  scrollbar-color: #dcdfe4 transparent;
 }
 .board-column .column-cards::-webkit-scrollbar {
   width: 0.6rem;
+  height: 0.6rem;
 }
 .board-column .column-cards::-webkit-scrollbar-track {
   background: transparent;
+  border-radius: 0.6rem;
 }
 .board-column .column-cards::-webkit-scrollbar-thumb {
   background: #dcdfe4;
-  border-radius: 0.4rem;
+  border-radius: 0.6rem;
 }
 .board-column .column-cards::-webkit-scrollbar-thumb:hover {
   background: #bfc4ce;
+}
+.board-column .column-footer {
+  padding: 0.6rem 1.2rem 1.2rem;
 }
 
 .board-column-dragging {
@@ -216,13 +298,27 @@
   max-height: calc(100vh - 16rem);
   overflow: hidden;
   border-radius: 1.2rem;
+  will-change: transform;
+  pointer-events: none;
 }
 
 .column-drag-handle {
   cursor: grab;
+  user-select: none;
+  touch-action: none;
 }
 .column-drag-handle:active {
   cursor: grabbing;
+}
+
+.rotate-drag {
+  transform: rotate(4deg);
+  box-shadow: 0 0.8rem 2.4rem rgba(0, 0, 0, 0.15);
+  cursor: grabbing;
+  border: 0.1rem solid #cbd5e1;
+  border-radius: 0.8rem;
+  will-change: transform;
+  pointer-events: none;
 }
 
 .card-item {
@@ -232,22 +328,33 @@
   padding: 1.2rem;
   margin-bottom: 0.8rem;
   box-shadow: 0 0.1rem 0.3rem rgba(9, 30, 66, 0.05);
-  transition: all 0.15s ease;
   cursor: grab;
+  user-select: none;
+  touch-action: manipulation;
+  transition: box-shadow, border-color, transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-item {
+    transition: none;
+  }
 }
 .card-item:hover {
-  background-color: #ffffff !important;
   border-color: #cbd5e1;
   box-shadow: 0 0.4rem 1.2rem rgba(9, 30, 66, 0.08);
 }
 .card-item:active {
   cursor: grabbing;
 }
+.card-item:focus-visible {
+  outline: 0.2rem solid #4f46e5;
+  outline-offset: 0.1rem;
+}
 .card-item .card-title-text {
-  font-size: 1.35rem;
+  font-size: 1.4rem;
   font-weight: 500;
   color: #172b4d;
   line-height: 1.4;
+  word-break: break-word;
 }
 .card-item .card-tag-badge {
   font-weight: 600;
@@ -257,7 +364,7 @@
   min-height: 2.4rem;
 }
 .card-item .card-meta-item {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   line-height: 1;
 }
 .card-item .card-meta-item i {
@@ -265,29 +372,31 @@
 }
 .card-item .card-members-stack .card-member-avatar {
   background-color: #e2e8f0;
-  transition: transform 0.15s ease;
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-item .card-members-stack .card-member-avatar {
+    transition: none;
+  }
 }
 .card-item .card-members-stack .card-member-avatar:hover {
   transform: scale(1.15);
-  z-index: 10 !important;
+  z-index: 10;
 }
 .card-item .shadow-xs {
   box-shadow: 0 0.1rem 0.2rem rgba(0, 0, 0, 0.06);
 }
 .card-item .group-hover-opacity-100 {
   opacity: 0;
-  transition: opacity 0.15s ease-in-out;
+  transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-item .group-hover-opacity-100 {
+    transition: none;
+  }
 }
 .card-item:hover .group-hover-opacity-100 {
   opacity: 1;
-}
-
-.rotate-drag {
-  transform: rotate(4deg);
-  box-shadow: 0 0.8rem 2.4rem rgba(0, 0, 0, 0.15);
-  cursor: grabbing;
-  border: 0.1rem solid #cbd5e1;
-  border-radius: 0.8rem;
 }
 
 .add-card-btn {
@@ -298,11 +407,20 @@
   color: #44546f;
   border: none;
   background-color: transparent;
-  transition: background-color 0.15s ease;
+  transition: background-color, color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .add-card-btn {
+    transition: none;
+  }
 }
 .add-card-btn:hover {
-  background-color: rgba(9, 30, 66, 0.06);
-  color: #172b4d !important;
+  background-color: rgba(9, 30, 66, 0.0588235294);
+  color: #172b4d;
+}
+.add-card-btn:focus-visible {
+  outline: 0.2rem solid #4f46e5;
+  outline-offset: 0.1rem;
 }
 
 .add-card-form textarea {
@@ -310,10 +428,17 @@
   font-size: 1.3rem;
   border-radius: 0.6rem;
   border: 0.1rem solid #e2e8f0;
+  transition: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .add-card-form textarea {
+    transition: none;
+  }
 }
 .add-card-form textarea:focus {
   box-shadow: none;
   border-color: #4f46e5;
+  outline: none;
 }
 
 .add-column-container {
@@ -322,17 +447,26 @@
 
 .add-column-btn {
   width: 100%;
-  background-color: rgba(9, 30, 66, 0.06);
+  background-color: rgba(9, 30, 66, 0.0588235294);
   color: #44546f;
   border: 0.1rem dashed #cbd5e1;
   border-radius: 1.2rem;
   font-size: 1.3rem;
   font-weight: 500;
   padding: 1rem 1.4rem;
-  transition: all 0.15s ease;
+  transition: background-color, color, border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .add-column-btn {
+    transition: none;
+  }
 }
 .add-column-btn:hover {
-  background-color: rgba(9, 30, 66, 0.1);
+  background-color: rgba(9, 30, 66, 0.1411764706);
   color: #172b4d;
   border-color: #94a3b8;
+}
+.add-column-btn:focus-visible {
+  outline: 0.2rem solid #4f46e5;
+  outline-offset: 0.1rem;
 }

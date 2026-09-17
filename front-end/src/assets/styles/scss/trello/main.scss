@@ -1,4 +1,5 @@
 @use '../variables';
+@import '../index.scss';
 
 html {
 	height: variables.$height-100;
