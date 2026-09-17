@@ -1,0 +1,14 @@
+@use './variables';
+
+html,
+body {
+	height: 100%;
+	width: 100%;
+	max-width: 100%;
+	overflow-x: hidden;
+	font-family: variables.$font-family;
+	font-size: variables.$font-size;
+	line-height: variables.$line-height;
+	color: variables.$text-color;
+	background-color: variables.$background-color;
+}
