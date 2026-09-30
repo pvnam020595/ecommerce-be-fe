@@ -1,0 +1,566 @@
+@use '../variables';
+
+/* ==========================================================================
+   TRELLO BOARD STYLES
+   Architecture: BEM-inspired modular structure, tokenized design variables,
+                 GPU-accelerated drag-and-drop feedback, high-DPI scrollbars,
+                 accessibility & reduced-motion support.
+   ========================================================================== */
+
+// --------------------------------------------------------------------------
+// 1. Tokens & Design Constants
+// --------------------------------------------------------------------------
+
+// Layout dimensions
+$board-header-height-sm: 5.6rem;
+$board-header-height-md: 6.4rem;
+$board-column-width-sm: 25rem;
+$board-column-width-md: 26.5rem;
+$board-column-max-height-sm: calc(100vh - 13rem);
+$board-column-max-height-md: calc(100vh - 16rem);
+$board-container-height: calc(100vh - 5.6rem);
+
+// Theme & Surfaces (Integrated with Atlassian Design System tokens)
+$board-bg: #eef2f6;
+$column-bg: variables.$ds-background-accent-gray-subtlest; // #f1f2f4
+$card-bg: variables.$ds-surface; // #ffffff
+$header-bg: rgba(255, 255, 255, 0.44);
+
+// Borders
+$border-subtle: #e2e8f0;
+$border-default: #cbd5e1;
+$border-hover: #94a3b8;
+
+// Typography colors
+$text-dark: variables.$ds-text; // #172b4d
+$text-subtle: variables.$ds-text-subtle; // #44546f
+$text-muted: variables.$ds-text-subtlest; // #626f86
+$text-inverse: variables.$ds-text-inverse; // #ffffff
+
+// Interactive & Brand Accents
+$primary-brand: #4f46e5;
+$primary-brand-hover: #4338ca;
+$accent-emerald: #10b981;
+$accent-pink: #ec4899;
+
+// Control surfaces & interactive states
+$btn-subtle-bg: variables.$ds-background-neutral; // rgba(9, 30, 66, 0.06)
+$btn-subtle-bg-hover: variables.$ds-background-neutral-hovered; // rgba(9, 30, 66, 0.12)
+$btn-subtle-bg-active: variables.$ds-background-neutral-pressed;
+
+// Border radii
+$radius-xs: 0.4rem;
+$radius-sm: 0.6rem;
+$radius-md: 0.8rem;
+$radius-lg: 1.2rem;
+$radius-pill: 50%;
+
+// Shadows & Elevations
+$shadow-xs: 0 0.1rem 0.2rem rgba(0, 0, 0, 0.06);
+$shadow-card: 0 0.1rem 0.3rem rgba(9, 30, 66, 0.05);
+$shadow-card-hover: 0 0.4rem 1.2rem rgba(9, 30, 66, 0.08);
+$shadow-drag-overlay: 0 1.2rem 3.2rem rgba(0, 0, 0, 0.15);
+$shadow-card-drag: 0 0.8rem 2.4rem rgba(0, 0, 0, 0.15);
+
+// Animation timings & curves
+$motion-duration-fast: 0.15s;
+$motion-duration-standard: 0.2s;
+$motion-easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+// Z-index scale
+$z-card-hover: 10;
+$z-overlay: 1000;
+$z-dropdown: 1050;
+
+// Breakpoints
+$bp-mobile: 767.98px;
+$bp-tablet: 768px;
+$bp-desktop: 992px;
+$bp-desktop-lg: 1024px;
+
+// --------------------------------------------------------------------------
+// 2. Mixins & Utility Helpers
+// --------------------------------------------------------------------------
+
+@mixin transition($prop: all, $duration: $motion-duration-fast, $timing: $motion-easing-standard) {
+	transition: $prop $duration $timing;
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+@mixin custom-scrollbar($size: 0.6rem, $thumb: #bfc4ce, $thumb-hover: #97a0af, $track: transparent) {
+	// Standard CSS scrollbar styling
+	scrollbar-width: thin;
+	scrollbar-color: $thumb $track;
+
+	// WebKit fallback
+	&::-webkit-scrollbar {
+		width: $size;
+		height: $size;
+	}
+
+	&::-webkit-scrollbar-track {
+		background: $track;
+		border-radius: $radius-sm;
+	}
+
+	&::-webkit-scrollbar-thumb {
+		background: $thumb;
+		border-radius: $radius-sm;
+
+		&:hover {
+			background: $thumb-hover;
+		}
+	}
+}
+
+@mixin truncate {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+// --------------------------------------------------------------------------
+// 3. Board Layout & Shell
+// --------------------------------------------------------------------------
+
+.trello-board-wrapper {
+	background-color: $board-bg;
+	font-size: var(--app-font-size, 1.6rem);
+
+	@media (max-width: $bp-mobile) {
+		font-size: variables.$font-size-mobile;
+	}
+
+	@media (min-width: $bp-tablet) and (max-width: ($bp-desktop - 0.02px)) {
+		font-size: variables.$font-size-tablet;
+	}
+
+	@media (min-width: $bp-desktop) {
+		font-size: variables.$font-size-desktop;
+	}
+}
+
+.board-container {
+	height: $board-container-height;
+	background-color: $board-bg;
+}
+
+// --------------------------------------------------------------------------
+// 4. Board Header & Toolbar
+// --------------------------------------------------------------------------
+
+.board-header {
+	min-height: $board-header-height-sm;
+	background-color: $header-bg;
+	backdrop-filter: blur(8px);
+	border-bottom: 0.1rem solid $border-subtle;
+
+	@media (min-width: $bp-tablet) {
+		height: $board-header-height-md;
+		min-height: $board-header-height-md;
+	}
+
+	.board-header-title {
+		font-size: variables.$font-size-desktop;
+		font-weight: 600;
+		color: $text-dark;
+		line-height: 2rem;
+		letter-spacing: -0.01rem;
+
+		@media (min-width: $bp-tablet) {
+			font-size: variables.$font-size-desktop;
+			line-height: 2.2rem;
+		}
+	}
+
+	.btn-board-star {
+		width: 2.6rem;
+		height: 2.6rem;
+		background-color: $btn-subtle-bg;
+		border: none;
+		border-radius: $radius-sm;
+		color: $text-subtle;
+		@include transition(background-color);
+
+		&:hover {
+			background-color: $btn-subtle-bg-hover;
+			color: $text-dark;
+		}
+
+		&:focus-visible {
+			outline: 0.2rem solid $primary-brand;
+			outline-offset: 0.1rem;
+		}
+	}
+
+	.board-header-divider {
+		width: 0.1rem;
+		height: 1.6rem;
+		background-color: $border-subtle;
+	}
+
+	.btn-board-visibility {
+		height: 2.7rem;
+		background-color: $btn-subtle-bg;
+		border: none;
+		border-radius: $radius-sm;
+		padding: 0.6rem 1rem;
+		font-size: variables.$font-size-mobile;
+		font-weight: 500;
+		color: $text-subtle;
+		line-height: 1.5rem;
+		@include transition(background-color);
+
+		&:hover {
+			background-color: $btn-subtle-bg-hover;
+			color: $text-dark;
+		}
+
+		&:focus-visible {
+			outline: 0.2rem solid $primary-brand;
+			outline-offset: 0.1rem;
+		}
+	}
+
+	.board-header-members {
+		position: relative;
+		height: 2.6rem;
+
+		.member-avatar {
+			width: 2.6rem;
+			height: 2.6rem;
+			border-radius: $radius-pill;
+			border: 0.15rem solid $text-inverse;
+			object-fit: cover;
+			margin-left: -0.6rem;
+			@include transition(transform);
+
+			&:first-child {
+				margin-left: 0;
+			}
+
+			&:hover {
+				transform: scale(1.1);
+				z-index: 2;
+			}
+		}
+
+		.member-avatar-initials {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: variables.$font-size-mobile;
+			font-weight: 600;
+			color: $text-inverse;
+			line-height: 1;
+
+			&.bg-emerald {
+				background-color: $accent-emerald;
+			}
+
+			&.bg-pink {
+				background-color: $accent-pink;
+			}
+		}
+
+		.member-add-btn {
+			background-color: $primary-brand;
+			color: $text-inverse;
+			border: 0.15rem solid $text-inverse;
+			font-size: variables.$font-size-mobile;
+			cursor: pointer;
+			@include transition(background-color);
+
+			&:hover {
+				background-color: $primary-brand-hover;
+			}
+
+			&:focus-visible {
+				outline: 0.2rem solid $primary-brand;
+				outline-offset: 0.1rem;
+			}
+		}
+	}
+
+	.btn-board-action-btn {
+		height: 3.1rem;
+		background-color: $btn-subtle-bg;
+		border: none;
+		border-radius: $radius-sm;
+		padding: 0.6rem 1rem;
+		font-size: variables.$font-size-mobile;
+		font-weight: 500;
+		color: $text-subtle;
+		line-height: 1.5rem;
+		@include transition((background-color, color));
+
+		@media (min-width: $bp-tablet) {
+			padding: 0.8rem 1.2rem;
+		}
+
+		&:hover {
+			background-color: $btn-subtle-bg-hover;
+			color: $text-dark;
+		}
+
+		&:focus-visible {
+			outline: 0.2rem solid $primary-brand;
+			outline-offset: 0.1rem;
+		}
+	}
+}
+
+// --------------------------------------------------------------------------
+// 5. Board Canvas & Column Layout
+// --------------------------------------------------------------------------
+
+.board-content {
+	flex-grow: 1;
+	align-items: flex-start;
+	overflow-x: auto;
+	overflow-y: hidden;
+	background-color: $board-bg;
+	padding: 1.2rem;
+	gap: 1.2rem;
+	@include custom-scrollbar(1rem, #bfc4ce, #97a0af, $btn-subtle-bg);
+
+	@media (min-width: $bp-tablet) {
+		padding: 2rem;
+		gap: 1.6rem;
+	}
+
+	@media (min-width: $bp-desktop-lg) {
+		padding: 2.4rem;
+	}
+}
+
+.board-column {
+	width: $board-column-width-sm;
+	min-width: $board-column-width-sm;
+	max-height: $board-column-max-height-sm;
+	background-color: $column-bg;
+	border-radius: $radius-lg;
+	border: 0.1rem solid $border-subtle;
+
+	@media (min-width: $bp-tablet) {
+		width: $board-column-width-md;
+		min-width: $board-column-width-md;
+		max-height: $board-column-max-height-md;
+	}
+
+	.column-header {
+		padding: 1.2rem 1.2rem 0.6rem;
+
+		h6 {
+			font-size: variables.$font-size-mobile;
+			font-weight: 600;
+			color: $text-dark;
+			max-width: 20rem;
+			@include truncate;
+		}
+	}
+
+	.column-cards {
+		min-height: 2rem;
+		padding: 0.6rem 1.2rem;
+		@include custom-scrollbar(0.6rem, #dcdfe4, #bfc4ce, transparent);
+	}
+
+	.column-footer {
+		padding: 0.6rem 1.2rem 1.2rem;
+	}
+}
+
+// --------------------------------------------------------------------------
+// 6. Drag & Drop States & Feedback
+// --------------------------------------------------------------------------
+
+.board-column-dragging {
+	opacity: 0.5;
+}
+
+// Column drag overlay (floating clone preview)
+.column-overlay {
+	transform: rotate(3deg);
+	box-shadow: $shadow-drag-overlay;
+	cursor: grabbing;
+	max-height: $board-column-max-height-md;
+	overflow: hidden;
+	border-radius: $radius-lg;
+	will-change: transform;
+	pointer-events: none;
+}
+
+.column-drag-handle {
+	cursor: grab;
+	user-select: none;
+	touch-action: none;
+
+	&:active {
+		cursor: grabbing;
+	}
+}
+
+// Card drag overlay (floating clone preview)
+.rotate-drag {
+	transform: rotate(4deg);
+	box-shadow: $shadow-card-drag;
+	cursor: grabbing;
+	border: 0.1rem solid $border-default;
+	border-radius: $radius-md;
+	will-change: transform;
+	pointer-events: none;
+}
+
+// --------------------------------------------------------------------------
+// 7. Card Item & Metadata Elements
+// --------------------------------------------------------------------------
+
+.card-item {
+	background-color: $card-bg;
+	border: 0.1rem solid $border-subtle;
+	border-radius: $radius-md;
+	padding: 1.2rem;
+	margin-bottom: 0.8rem;
+	box-shadow: $shadow-card;
+	cursor: grab;
+	user-select: none;
+	touch-action: manipulation;
+	@include transition((box-shadow, border-color, transform));
+
+	&:hover {
+		border-color: $border-default;
+		box-shadow: $shadow-card-hover;
+	}
+
+	&:active {
+		cursor: grabbing;
+	}
+
+	&:focus-visible {
+		outline: 0.2rem solid $primary-brand;
+		outline-offset: 0.1rem;
+	}
+
+	.card-title-text {
+		font-size: variables.$font-size-mobile;
+		font-weight: 500;
+		color: $text-dark;
+		line-height: 1.4;
+		word-break: break-word;
+	}
+
+	.card-tag-badge {
+		font-weight: 600;
+		letter-spacing: 0.02rem;
+	}
+
+	.card-meta-row {
+		min-height: 2.4rem;
+	}
+
+	.card-meta-item {
+		font-size: variables.$font-size-mobile;
+		line-height: 1;
+
+		i {
+			font-size: 1.3rem;
+		}
+	}
+
+	.card-members-stack {
+		.card-member-avatar {
+			background-color: $border-subtle;
+			@include transition(transform);
+
+			&:hover {
+				transform: scale(1.15);
+				z-index: $z-card-hover;
+			}
+		}
+	}
+
+	.shadow-xs {
+		box-shadow: $shadow-xs;
+	}
+
+	.group-hover-opacity-100 {
+		opacity: 0;
+		@include transition(opacity);
+	}
+
+	&:hover .group-hover-opacity-100 {
+		opacity: 1;
+	}
+}
+
+// --------------------------------------------------------------------------
+// 8. Actions & Forms (Add Card, Add Column)
+// --------------------------------------------------------------------------
+
+.add-card-btn {
+	border-radius: $radius-sm;
+	padding: 0.6rem 1rem;
+	font-size: 1.3rem;
+	font-weight: 500;
+	color: $text-subtle;
+	border: none;
+	background-color: transparent;
+	@include transition((background-color, color));
+
+	&:hover {
+		background-color: $btn-subtle-bg;
+		color: $text-dark;
+	}
+
+	&:focus-visible {
+		outline: 0.2rem solid $primary-brand;
+		outline-offset: 0.1rem;
+	}
+}
+
+.add-card-form {
+	textarea {
+		resize: none;
+		font-size: 1.3rem;
+		border-radius: $radius-sm;
+		border: 0.1rem solid $border-subtle;
+		@include transition(border-color);
+
+		&:focus {
+			box-shadow: none;
+			border-color: $primary-brand;
+			outline: none;
+		}
+	}
+}
+
+.add-column-container {
+	min-width: $board-column-width-md;
+}
+
+.add-column-btn {
+	width: 100%;
+	background-color: $btn-subtle-bg;
+	color: $text-subtle;
+	border: 0.1rem dashed $border-default;
+	border-radius: $radius-lg;
+	font-size: 1.3rem;
+	font-weight: 500;
+	padding: 1rem 1.4rem;
+	@include transition((background-color, color, border-color));
+
+	&:hover {
+		background-color: $btn-subtle-bg-hover;
+		color: $text-dark;
+		border-color: $border-hover;
+	}
+
+	&:focus-visible {
+		outline: 0.2rem solid $primary-brand;
+		outline-offset: 0.1rem;
+	}
+}
