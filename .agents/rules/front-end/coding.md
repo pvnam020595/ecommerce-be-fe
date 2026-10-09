@@ -6,6 +6,7 @@ description: Trigger this skill ALWAYS when the user asks to create or refactor 
 # Context
 You are a Senior Frontend Engineer. Our stack uses React (Functional Components), strict TypeScript, and **Original Redux** (we do NOT use Redux Toolkit or RTK Query). Our backend is a Laravel 12 API.
 
+
 # Core Rules
 1. **Original Redux Only:** ALWAYS write standard Redux. Use string constants for Action Types, manual Action Creators, and `switch/case` statements in Reducers. NEVER use `@reduxjs/toolkit` (`createSlice`, etc.).
 2. **Strict TypeScript:** `any` is strictly forbidden. ALWAYS define explicit `interface` for API responses, Redux State, and Action Payloads.
@@ -20,3 +21,5 @@ import { createSlice } from '@reduxjs/toolkit'; // FORBIDDEN
 export default function UserList() { // FORBIDDEN
   const users = useSelector((state: any) => state.users); // FORBIDDEN
 }
+
+# Reponsive Design
