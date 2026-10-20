@@ -27,38 +27,38 @@ export const authReducer = (
 	action: AuthAction
 ): LoginState => {
 	switch (action.type) {
-		case LOGIN: {
-			try {
-				localStorage.setItem(
-					'trello_auth_user',
-					JSON.stringify(action.payload)
-				);
-			} catch (e) {
-				console.error('Failed to save auth user to localStorage', e);
-			}
-			return {
-				...state,
-				isLoggedIn: true,
-				user: action.payload
-			};
+	case LOGIN: {
+		try {
+			localStorage.setItem(
+				'trello_auth_user',
+				JSON.stringify(action.payload)
+			);
+		} catch (e) {
+			console.error('Failed to save auth user to localStorage', e);
 		}
-		case LOGOUT: {
-			try {
-				localStorage.removeItem('trello_auth_user');
-			} catch (e) {
-				console.error(
-					'Failed to remove auth user from localStorage',
-					e
-				);
-			}
-			return {
-				...state,
-				isLoggedIn: false,
-				user: null
-			};
+		return {
+			...state,
+			isLoggedIn: true,
+			user: action.payload
+		};
+	}
+	case LOGOUT: {
+		try {
+			localStorage.removeItem('trello_auth_user');
+		} catch (e) {
+			console.error(
+				'Failed to remove auth user from localStorage',
+				e
+			);
 		}
-		default:
-			return state;
+		return {
+			...state,
+			isLoggedIn: false,
+			user: null
+		};
+	}
+	default:
+		return state;
 	}
 };
 

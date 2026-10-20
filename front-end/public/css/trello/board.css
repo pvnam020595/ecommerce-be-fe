@@ -470,3 +470,124 @@
   outline: 0.2rem solid #4f46e5;
   outline-offset: 0.1rem;
 }
+
+.card-modal-header {
+  padding: 2rem 3.2rem 1.4rem;
+  border-bottom: 0.1rem solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .card-modal-header {
+    padding: 1.8rem 2.4rem 1.2rem;
+  }
+}
+@media (max-width: 767.98px) {
+  .card-modal-header {
+    padding: 1.4rem 1.6rem 1.2rem;
+  }
+}
+.card-modal-header .card-modal-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  width: 100%;
+}
+@media (max-width: 767.98px) {
+  .card-modal-header .card-modal-header-row {
+    gap: 0.8rem;
+  }
+}
+.card-modal-header .card-modal-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.card-modal-header .card-modal-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #172b4d;
+  line-height: 1.4;
+  min-height: 3.4rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  flex-grow: 1;
+  min-width: 0;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-modal-header .card-modal-title {
+    transition: none;
+  }
+}
+.card-modal-header .card-modal-title:hover {
+  background-color: rgba(9, 30, 66, 0.0588235294);
+}
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .card-modal-header .card-modal-title {
+    font-size: 1.65rem;
+  }
+}
+@media (max-width: 767.98px) {
+  .card-modal-header .card-modal-title {
+    font-size: 1.5rem;
+    padding: 0.4rem 0.6rem;
+  }
+}
+.card-modal-header .card-modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 0.1rem;
+}
+@media (max-width: 767.98px) {
+  .card-modal-header .card-modal-header-actions {
+    gap: 0.6rem;
+  }
+}
+.card-modal-header .card-modal-header-divider {
+  width: 0.1rem;
+  height: 2.2rem;
+  background-color: #cbd5e1;
+  flex-shrink: 0;
+}
+.card-modal-header .card-modal-close-btn {
+  width: 3.2rem;
+  height: 3.2rem;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-size: 1.2rem;
+  opacity: 0.7;
+  transition: background-color, opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-modal-header .card-modal-close-btn {
+    transition: none;
+  }
+}
+.card-modal-header .card-modal-close-btn:hover {
+  background-color: rgba(9, 30, 66, 0.1411764706);
+  opacity: 1;
+}
+.card-modal-header .card-modal-subtitle {
+  padding-left: 2.8rem;
+  margin-top: 0.2rem;
+}
+@media (max-width: 767.98px) {
+  .card-modal-header .card-modal-subtitle {
+    padding-left: 2.6rem;
+  }
+}

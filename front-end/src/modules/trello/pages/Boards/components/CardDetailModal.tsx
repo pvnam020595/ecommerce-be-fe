@@ -340,9 +340,12 @@ const StatusDropdownMenu: React.FC<StatusDropdownMenuProps> = ({
 			const spaceBelow = window.innerHeight - rect.bottom;
 			const openUp = spaceBelow < menuHeight && rect.top > menuHeight;
 			const top = openUp ? rect.top - menuHeight - 4 : rect.bottom + 4;
-			const left = Math.min(
-				window.innerWidth - menuWidth - 10,
-				Math.max(10, rect.left)
+			const left = Math.max(
+				10,
+				Math.min(
+					window.innerWidth - menuWidth - 10,
+					rect.right - menuWidth
+				)
 			);
 			setMenuPos({ top, left });
 		}
@@ -2890,73 +2893,70 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
 						style={{ borderRadius: '16px', maxHeight: '92vh' }}
 					>
 						{/* Header */}
-						<div className="modal-header border-0 pb-0 pt-4 px-4 px-md-5 flex-column align-items-stretch">
-							<div className="d-flex align-items-center justify-content-between mb-2">
-								<StatusDropdownMenu
-									columns={columns}
-									currentColumnId={currentColumnId}
-									onSelectColumn={handleStatusChange}
-								/>
-								<button
-									type="button"
-									className="btn-close"
-									onClick={onClose}
-									aria-label="Close"
-								></button>
-							</div>
-
-							{/* Title row */}
-							<div className="d-flex align-items-center gap-2 flex-nowrap w-100">
-								<i className="bi bi-card-heading fs-5 text-muted flex-shrink-0 align-self-start mt-1"></i>
-								{isEditingTitle ? (
-									<AutoResizeTitleTextarea
-										value={formData.title}
-										fallbackTitle={card.title}
-										onChange={val => {
-											updateField('title', val);
-											if (
-												val.trim() &&
-												val.trim() !== card.title
-											) {
-												logActivity(
-													'title',
-													`changed card title to "${val.trim()}"`
-												);
+						<div className="modal-header card-modal-header">
+							<div className="card-modal-header-row">
+								<div className="card-modal-title-group">
+									<i className="bi bi-card-heading fs-5 text-muted flex-shrink-0 align-self-start mt-1"></i>
+									{isEditingTitle ? (
+										<AutoResizeTitleTextarea
+											value={formData.title}
+											fallbackTitle={card.title}
+											onChange={val => {
+												updateField('title', val);
+												if (
+													val.trim() &&
+													val.trim() !== card.title
+												) {
+													logActivity(
+														'title',
+														`changed card title to "${val.trim()}"`
+													);
+												}
+											}}
+											onFinish={() =>
+												setIsEditingTitle(false)
 											}
-										}}
-										onFinish={() =>
-											setIsEditingTitle(false)
-										}
-									/>
-								) : (
+										/>
+									) : (
+										<div
+											className="card-modal-title"
+											onClick={() =>
+												setIsEditingTitle(true)
+											}
+											title="Click to edit title"
+											role="button"
+											tabIndex={0}
+											onKeyDown={e => {
+												if (e.key === 'Enter')
+													setIsEditingTitle(true);
+											}}
+										>
+											{formData.title || card.title}
+										</div>
+									)}
+								</div>
+
+								<div className="card-modal-header-actions">
 									<div
-										className="fw-bold fs-5 px-2 py-1 rounded cursor-pointer flex-grow-1"
-										onClick={() => setIsEditingTitle(true)}
-										title="Click to edit title"
-										role="button"
-										tabIndex={0}
-										onKeyDown={e => {
-											if (e.key === 'Enter')
-												setIsEditingTitle(true);
-										}}
-										style={{
-											minHeight: '34px',
-											lineHeight: '1.4',
-											wordBreak: 'break-word',
-											overflowWrap: 'anywhere',
-											minWidth: 0
-										}}
-									>
-										{formData.title || card.title}
-									</div>
-								)}
+										className="card-modal-header-divider"
+										aria-hidden="true"
+									></div>
+									<StatusDropdownMenu
+										columns={columns}
+										currentColumnId={currentColumnId}
+										onSelectColumn={handleStatusChange}
+									/>
+									<button
+										type="button"
+										className="btn-close card-modal-close-btn"
+										onClick={onClose}
+										aria-label="Close"
+									></button>
+								</div>
 							</div>
 
 							{currentColumn && (
-								<div
-									className="text-muted fs-8 mt-1"
-									style={{ paddingLeft: '1.75rem' }}
-								>
+								<div className="text-muted fs-8 card-modal-subtitle">
 									in list{' '}
 									<span className="fw-semibold text-dark">
 										{currentColumn.title}

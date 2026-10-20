@@ -286,10 +286,10 @@ const CreateBoardModal = ({ onClose }: CreateBoardModalProps) => {
 	const previewStyle =
 		selectedBg.type === 'image'
 			? {
-					backgroundImage: `url('${selectedBg.value}')`,
-					backgroundSize: 'cover',
-					backgroundPosition: 'center'
-				}
+				backgroundImage: `url('${selectedBg.value}')`,
+				backgroundSize: 'cover',
+				backgroundPosition: 'center'
+			}
 			: { backgroundColor: selectedBg.value };
 
 	const handleSubmit = (e: React.FormEvent) => {
@@ -651,10 +651,10 @@ export const Home = () => {
 								{/* Create new board tile */}
 								<button
 									type="button"
-									className="board-tile create-board w-100"
+									className="board-tile create-board"
 									onClick={() => setShowCreateModal(true)}
 								>
-									<span>
+									<span className="d-inline-flex align-items-center justify-content-center">
 										<i className="bi bi-plus me-1"></i>
 										Create new board
 									</span>

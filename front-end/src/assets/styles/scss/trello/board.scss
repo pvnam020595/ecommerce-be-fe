@@ -564,3 +564,120 @@ $bp-desktop-lg: 1024px;
 		outline-offset: 0.1rem;
 	}
 }
+
+// --------------------------------------------------------------------------
+// 9. Card Detail Modal Header
+// --------------------------------------------------------------------------
+
+.card-modal-header {
+	padding: 2rem 3.2rem 1.4rem;
+	border-bottom: 0.1rem solid $border-subtle;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+
+	@media (min-width: 768px) and (max-width: 991.98px) {
+		padding: 1.8rem 2.4rem 1.2rem;
+	}
+
+	@media (max-width: 767.98px) {
+		padding: 1.4rem 1.6rem 1.2rem;
+	}
+
+	.card-modal-header-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1.2rem;
+		width: 100%;
+
+		@media (max-width: 767.98px) {
+			gap: 0.8rem;
+		}
+	}
+
+	.card-modal-title-group {
+		display: flex;
+		align-items: center;
+		gap: 0.8rem;
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	.card-modal-title {
+		font-size: 1.8rem;
+		font-weight: 700;
+		color: $text-dark;
+		line-height: 1.4;
+		min-height: 3.4rem;
+		padding: 0.4rem 0.8rem;
+		border-radius: $radius-sm;
+		cursor: pointer;
+		flex-grow: 1;
+		min-width: 0;
+		word-break: break-word;
+		overflow-wrap: anywhere;
+		@include transition(background-color);
+
+		&:hover {
+			background-color: $btn-subtle-bg;
+		}
+
+		@media (min-width: 768px) and (max-width: 991.98px) {
+			font-size: 1.65rem;
+		}
+
+		@media (max-width: 767.98px) {
+			font-size: 1.5rem;
+			padding: 0.4rem 0.6rem;
+		}
+	}
+
+	.card-modal-header-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.8rem;
+		flex-shrink: 0;
+		align-self: flex-start;
+		margin-top: 0.1rem;
+
+		@media (max-width: 767.98px) {
+			gap: 0.6rem;
+		}
+	}
+
+	.card-modal-header-divider {
+		width: 0.1rem;
+		height: 2.2rem;
+		background-color: $border-default;
+		flex-shrink: 0;
+	}
+
+	.card-modal-close-btn {
+		width: 3.2rem;
+		height: 3.2rem;
+		margin: 0 !important;
+		padding: 0 !important;
+		border-radius: 50%;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		background-size: 1.2rem;
+		opacity: 0.7;
+		@include transition((background-color, opacity));
+
+		&:hover {
+			background-color: $btn-subtle-bg-hover;
+			opacity: 1;
+		}
+	}
+
+	.card-modal-subtitle {
+		padding-left: 2.8rem;
+		margin-top: 0.2rem;
+
+		@media (max-width: 767.98px) {
+			padding-left: 2.6rem;
+		}
+	}
+}
