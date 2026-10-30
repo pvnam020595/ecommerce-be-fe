@@ -1,4 +1,4 @@
-version: '2.2'
+version: '2.3'
 services:
   db:
     container_name: ecommerce-db
@@ -11,8 +11,9 @@ services:
       MYSQL_USER: ecommerce
       MYSQL_PASSWORD: ecommerce
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_ROOT_USER: root
-        
+    volumes:
+      - mysql_data_ecommerce:/var/lib/mysql
+
   webserver:
     container_name: webserver
     build:
@@ -49,3 +50,6 @@ services:
     image: redis:latest
     ports:
       - "6379:6379"
+
+volumes:
+  mysql_data_ecommerce:

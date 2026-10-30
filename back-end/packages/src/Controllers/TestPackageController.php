@@ -8,6 +8,6 @@ class TestPackageController extends Controller
 {
 	public function index()
 	{
-		return view('testpackage::index');
+		return "wwwwwww";
 	}
 }
