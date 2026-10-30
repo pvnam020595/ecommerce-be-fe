@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Core\Http\Controllers;
 
 use App\Repositories\User\UserInterface;
 use Illuminate\Http\JsonResponse;
@@ -10,7 +10,9 @@ class UserController extends Controller
 {
     //
 
-    public function __construct() {}
+    public function __construct() {
+        Cache::put('key', 'value', 10);
+    }
 
     // public function index(Request $request): JsonResponse
     // {

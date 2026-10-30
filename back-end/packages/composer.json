@@ -1,0 +1,20 @@
+{
+    "name": "laravel/testpackage",
+    "description": "This is demo for test package in source laravel",
+    "type": "project",
+    "require": {
+        "php": "^8.2"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Laravel\\Testpackage\\": "packages/src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Pham Van Nam"
+        }
+    ],
+    "minimum-stability": "beta"
+}

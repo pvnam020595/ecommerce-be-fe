@@ -1,4 +1,4 @@
-FROM php:8.3-fpm
+FROM php:8.3.36-fpm
 
 RUN apt-get clean
 RUN apt-get update && apt-get install -y sudo \
@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y sudo \
     	libxml2-dev \
         libglib2.0-0 \
         libnss3 \
-        libgconf-2-4 \
+        # libgconf-2-4 \
         libfontconfig1 \
         libx11-xcb1 \
     	git \
@@ -23,8 +23,8 @@ RUN apt-get update && apt-get install -y sudo \
     && docker-php-ext-install -j$(nproc) gd \
     && docker-php-ext-install -j$(nproc) zip \
     && docker-php-ext-configure intl \
-    && docker-php-ext-install intl
-    # && pecl install xdebug-3.3.2 \
+    && docker-php-ext-install intl \
+    && pecl install xdebug-3.3.2
     # && docker-php-ext-enable xdebug
 
 # PHP.ini
